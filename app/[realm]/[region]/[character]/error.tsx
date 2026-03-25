@@ -10,7 +10,7 @@ export default function CharacterError({
   reset: () => void;
 }) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+    <div className="flex flex-1 flex-col items-center justify-center p-24">
       <h1 className="text-2xl font-bold text-destructive">Something went wrong</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         {error.message || "An unexpected error occurred while loading the character."}
@@ -29,6 +29,6 @@ export default function CharacterError({
           Go home
         </Link>
       </div>
-    </main>
+    </div>
   );
 }

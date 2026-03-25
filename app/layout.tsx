@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { AuthSessionProvider } from "@/components/layout/session-provider";
+import { AppBar } from "@/components/layout/app-bar";
+import { Footer } from "@/components/layout/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +19,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className} flex min-h-screen flex-col`}>
+        <AuthSessionProvider>
+          <AppBar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </AuthSessionProvider>
+      </body>
     </html>
   );
 }

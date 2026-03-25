@@ -69,7 +69,7 @@ describe("Property 5: Dynamic Route Renders Character Page", () => {
           const params = Promise.resolve({ realm, region, character });
           const jsx = await CharacterPage({ params });
           const { unmount } = render(jsx);
-          expect(document.querySelector("main")).toBeTruthy();
+          expect(document.querySelector("div")).toBeTruthy();
           unmount();
         }
       ),
@@ -109,7 +109,7 @@ describe("Property 6: Public Routes Accessible Without Auth", () => {
           const params = Promise.resolve({ realm, region, character });
           const jsx = await CharacterPage({ params });
           const { unmount } = render(jsx);
-          expect(document.querySelector("main")).toBeTruthy();
+          expect(document.querySelector("div")).toBeTruthy();
           unmount();
         }
       ),

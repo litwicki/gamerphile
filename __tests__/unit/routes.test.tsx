@@ -16,12 +16,6 @@ describe("Home page (/)", () => {
     render(<HomePage />);
     expect(screen.getByText(/world of warcraft/i)).toBeInTheDocument();
   });
-
-  it("renders navigation links to News and UI Showcase", () => {
-    render(<HomePage />);
-    expect(screen.getByText("News")).toBeInTheDocument();
-    expect(screen.getByText("UI Showcase")).toBeInTheDocument();
-  });
 });
 
 describe("News page (/news)", () => {

@@ -40,7 +40,7 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
     }
 
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <div className="flex flex-1 flex-col items-center justify-center p-24">
         <h1 className="text-2xl font-bold text-destructive">Error</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Failed to load character: {result.error.message}
@@ -51,7 +51,7 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
         >
           Go home
         </Link>
-      </main>
+      </div>
     );
   }
 
@@ -59,7 +59,7 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
   const profile = result.data;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+    <div className="flex flex-1 flex-col items-center justify-center p-24">
       <h1 className="text-4xl font-bold">{profile.name}</h1>
       <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
         <dt className="text-muted-foreground">Realm</dt>
@@ -74,6 +74,6 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
       <Link href="/" className="mt-8 text-sm text-muted-foreground hover:underline">
         &larr; Back to Home
       </Link>
-    </main>
+    </div>
   );
 }
