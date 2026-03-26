@@ -43,6 +43,58 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        "death-knight": {
+          DEFAULT: "#C41E3A",
+          muted: "#C41E3A66",
+        },
+        "demon-hunter": {
+          DEFAULT: "#A330C9",
+          muted: "#A330C966",
+        },
+        druid: {
+          DEFAULT: "#FF7C0A",
+          muted: "#FF7C0A66",
+        },
+        evoker: {
+          DEFAULT: "#33937F",
+          muted: "#33937F66",
+        },
+        hunter: {
+          DEFAULT: "#AAD372",
+          muted: "#AAD37266",
+        },
+        mage: {
+          DEFAULT: "#3FC7EB",
+          muted: "#3FC7EB66",
+        },
+        monk: {
+          DEFAULT: "#00FF98",
+          muted: "#00FF9866",
+        },
+        paladin: {
+          DEFAULT: "#F48CBA",
+          muted: "#F48CBA66",
+        },
+        priest: {
+          DEFAULT: "#FFFFFF",
+          muted: "#FFFFFF66",
+        },
+        rogue: {
+          DEFAULT: "#FFF468",
+          muted: "#FFF46866",
+        },
+        shaman: {
+          DEFAULT: "#0070DD",
+          muted: "#0070DD66",
+        },
+        warlock: {
+          DEFAULT: "#8788EE",
+          muted: "#8788EE66",
+        },
+        warrior: {
+          DEFAULT: "#C69B6D",
+          muted: "#C69B6D66",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
