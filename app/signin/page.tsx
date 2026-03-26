@@ -11,7 +11,7 @@ const regions = [
   { id: "cn", label: "China", disabled: true },
 ];
 
-export function getRegionCallbackUrl(regionId: string): string {
+function getRegionCallbackUrl(regionId: string): string {
   return `/?region=${regionId}`;
 }
 
