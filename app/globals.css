@@ -47,4 +47,305 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
   }
+
+  /* ── WoW Class Themes ── */
+
+  /* Death Knight: #C41E3A → HSL 350 73% 44% */
+  .theme-death-knight {
+    --background: 350 30% 6%;
+    --foreground: 350 20% 93%;
+    --card: 350 30% 8%;
+    --card-foreground: 350 20% 93%;
+    --popover: 350 30% 8%;
+    --popover-foreground: 350 20% 93%;
+    --primary: 350 73% 44%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 350 25% 14%;
+    --secondary-foreground: 350 20% 93%;
+    --muted: 350 20% 14%;
+    --muted-foreground: 350 15% 60%;
+    --accent: 350 30% 16%;
+    --accent-foreground: 350 20% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 350 20% 16%;
+    --input: 350 20% 16%;
+    --ring: 350 73% 44%;
+  }
+
+  /* Demon Hunter: #A330C9 → HSL 283 62% 49% */
+  .theme-demon-hunter {
+    --background: 283 30% 6%;
+    --foreground: 283 20% 93%;
+    --card: 283 30% 8%;
+    --card-foreground: 283 20% 93%;
+    --popover: 283 30% 8%;
+    --popover-foreground: 283 20% 93%;
+    --primary: 283 62% 49%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 283 25% 14%;
+    --secondary-foreground: 283 20% 93%;
+    --muted: 283 20% 14%;
+    --muted-foreground: 283 15% 60%;
+    --accent: 283 30% 16%;
+    --accent-foreground: 283 20% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 283 20% 16%;
+    --input: 283 20% 16%;
+    --ring: 283 62% 49%;
+  }
+
+  /* Druid: #FF7C0A → HSL 29 100% 52% */
+  .theme-druid {
+    --background: 29 30% 6%;
+    --foreground: 29 20% 93%;
+    --card: 29 30% 8%;
+    --card-foreground: 29 20% 93%;
+    --popover: 29 30% 8%;
+    --popover-foreground: 29 20% 93%;
+    --primary: 29 100% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 29 25% 14%;
+    --secondary-foreground: 29 20% 93%;
+    --muted: 29 20% 14%;
+    --muted-foreground: 29 15% 60%;
+    --accent: 29 30% 16%;
+    --accent-foreground: 29 20% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 29 20% 16%;
+    --input: 29 20% 16%;
+    --ring: 29 100% 52%;
+  }
+
+  /* Evoker: #33937F → HSL 167 48% 39% */
+  .theme-evoker {
+    --background: 167 25% 6%;
+    --foreground: 167 15% 93%;
+    --card: 167 25% 8%;
+    --card-foreground: 167 15% 93%;
+    --popover: 167 25% 8%;
+    --popover-foreground: 167 15% 93%;
+    --primary: 167 48% 39%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 167 20% 14%;
+    --secondary-foreground: 167 15% 93%;
+    --muted: 167 15% 14%;
+    --muted-foreground: 167 12% 60%;
+    --accent: 167 25% 16%;
+    --accent-foreground: 167 15% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 167 15% 16%;
+    --input: 167 15% 16%;
+    --ring: 167 48% 39%;
+  }
+
+  /* Hunter: #AAD372 → HSL 90 50% 64% */
+  .theme-hunter {
+    --background: 90 20% 6%;
+    --foreground: 90 15% 93%;
+    --card: 90 20% 8%;
+    --card-foreground: 90 15% 93%;
+    --popover: 90 20% 8%;
+    --popover-foreground: 90 15% 93%;
+    --primary: 90 50% 64%;
+    --primary-foreground: 90 30% 8%;
+    --secondary: 90 18% 14%;
+    --secondary-foreground: 90 15% 93%;
+    --muted: 90 15% 14%;
+    --muted-foreground: 90 12% 60%;
+    --accent: 90 20% 16%;
+    --accent-foreground: 90 15% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 90 15% 16%;
+    --input: 90 15% 16%;
+    --ring: 90 50% 64%;
+  }
+
+  /* Mage: #3FC7EB → HSL 195 81% 58% */
+  .theme-mage {
+    --background: 195 25% 6%;
+    --foreground: 195 15% 93%;
+    --card: 195 25% 8%;
+    --card-foreground: 195 15% 93%;
+    --popover: 195 25% 8%;
+    --popover-foreground: 195 15% 93%;
+    --primary: 195 81% 58%;
+    --primary-foreground: 195 40% 8%;
+    --secondary: 195 20% 14%;
+    --secondary-foreground: 195 15% 93%;
+    --muted: 195 15% 14%;
+    --muted-foreground: 195 12% 60%;
+    --accent: 195 25% 16%;
+    --accent-foreground: 195 15% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 195 15% 16%;
+    --input: 195 15% 16%;
+    --ring: 195 81% 58%;
+  }
+
+  /* Monk: #00FF98 → HSL 156 100% 50% */
+  .theme-monk {
+    --background: 156 25% 5%;
+    --foreground: 156 15% 93%;
+    --card: 156 25% 7%;
+    --card-foreground: 156 15% 93%;
+    --popover: 156 25% 7%;
+    --popover-foreground: 156 15% 93%;
+    --primary: 156 100% 50%;
+    --primary-foreground: 156 40% 6%;
+    --secondary: 156 20% 13%;
+    --secondary-foreground: 156 15% 93%;
+    --muted: 156 15% 13%;
+    --muted-foreground: 156 12% 58%;
+    --accent: 156 25% 15%;
+    --accent-foreground: 156 15% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 156 15% 15%;
+    --input: 156 15% 15%;
+    --ring: 156 100% 50%;
+  }
+
+  /* Paladin: #F48CBA → HSL 338 84% 75% */
+  .theme-paladin {
+    --background: 338 25% 6%;
+    --foreground: 338 15% 93%;
+    --card: 338 25% 8%;
+    --card-foreground: 338 15% 93%;
+    --popover: 338 25% 8%;
+    --popover-foreground: 338 15% 93%;
+    --primary: 338 84% 75%;
+    --primary-foreground: 338 40% 8%;
+    --secondary: 338 20% 14%;
+    --secondary-foreground: 338 15% 93%;
+    --muted: 338 15% 14%;
+    --muted-foreground: 338 12% 60%;
+    --accent: 338 25% 16%;
+    --accent-foreground: 338 15% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 338 15% 16%;
+    --input: 338 15% 16%;
+    --ring: 338 84% 75%;
+  }
+
+  /* Priest: #FFFFFF → HSL 0 0% 100% */
+  .theme-priest {
+    --background: 240 10% 6%;
+    --foreground: 0 0% 95%;
+    --card: 240 10% 8%;
+    --card-foreground: 0 0% 95%;
+    --popover: 240 10% 8%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 240 10% 6%;
+    --secondary: 240 5% 15%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 240 5% 15%;
+    --muted-foreground: 240 5% 60%;
+    --accent: 240 8% 17%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 5% 17%;
+    --input: 240 5% 17%;
+    --ring: 0 0% 100%;
+  }
+
+  /* Rogue: #FFF468 → HSL 56 100% 70% */
+  .theme-rogue {
+    --background: 56 20% 5%;
+    --foreground: 56 15% 93%;
+    --card: 56 20% 7%;
+    --card-foreground: 56 15% 93%;
+    --popover: 56 20% 7%;
+    --popover-foreground: 56 15% 93%;
+    --primary: 56 100% 70%;
+    --primary-foreground: 56 30% 8%;
+    --secondary: 56 15% 13%;
+    --secondary-foreground: 56 15% 93%;
+    --muted: 56 12% 13%;
+    --muted-foreground: 56 10% 58%;
+    --accent: 56 18% 15%;
+    --accent-foreground: 56 15% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 56 12% 15%;
+    --input: 56 12% 15%;
+    --ring: 56 100% 70%;
+  }
+
+  /* Shaman: #0070DD → HSL 210 100% 43% */
+  .theme-shaman {
+    --background: 210 30% 6%;
+    --foreground: 210 20% 93%;
+    --card: 210 30% 8%;
+    --card-foreground: 210 20% 93%;
+    --popover: 210 30% 8%;
+    --popover-foreground: 210 20% 93%;
+    --primary: 210 100% 43%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 25% 14%;
+    --secondary-foreground: 210 20% 93%;
+    --muted: 210 20% 14%;
+    --muted-foreground: 210 15% 60%;
+    --accent: 210 30% 16%;
+    --accent-foreground: 210 20% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 20% 16%;
+    --input: 210 20% 16%;
+    --ring: 210 100% 43%;
+  }
+
+  /* Warlock: #8788EE → HSL 240 74% 73% */
+  .theme-warlock {
+    --background: 240 25% 6%;
+    --foreground: 240 15% 93%;
+    --card: 240 25% 8%;
+    --card-foreground: 240 15% 93%;
+    --popover: 240 25% 8%;
+    --popover-foreground: 240 15% 93%;
+    --primary: 240 74% 73%;
+    --primary-foreground: 240 30% 8%;
+    --secondary: 240 20% 14%;
+    --secondary-foreground: 240 15% 93%;
+    --muted: 240 15% 14%;
+    --muted-foreground: 240 12% 60%;
+    --accent: 240 25% 16%;
+    --accent-foreground: 240 15% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 15% 16%;
+    --input: 240 15% 16%;
+    --ring: 240 74% 73%;
+  }
+
+  /* Warrior: #C69B6D → HSL 30 44% 60% */
+  .theme-warrior {
+    --background: 30 20% 6%;
+    --foreground: 30 15% 93%;
+    --card: 30 20% 8%;
+    --card-foreground: 30 15% 93%;
+    --popover: 30 20% 8%;
+    --popover-foreground: 30 15% 93%;
+    --primary: 30 44% 60%;
+    --primary-foreground: 30 25% 8%;
+    --secondary: 30 18% 14%;
+    --secondary-foreground: 30 15% 93%;
+    --muted: 30 15% 14%;
+    --muted-foreground: 30 12% 60%;
+    --accent: 30 20% 16%;
+    --accent-foreground: 30 15% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 12% 16%;
+    --input: 30 12% 16%;
+    --ring: 30 44% 60%;
+  }
 }

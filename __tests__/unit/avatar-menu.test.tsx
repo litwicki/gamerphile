@@ -19,6 +19,7 @@ vi.mock("next/navigation", () => ({
 
 import { useSession } from "next-auth/react";
 import { AvatarMenu, MENU_ITEMS } from "@/components/layout/avatar-menu";
+import { ThemeProvider } from "@/components/theme-provider";
 
 // ─── Helpers ───
 
@@ -81,18 +82,20 @@ describe("AvatarMenu", () => {
     it("displays Guilds, Characters, Interface in order when trigger is clicked", async () => {
       mockAuthenticated();
       const user = userEvent.setup();
-      render(<AvatarMenu />);
+      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
 
       const trigger = screen.getByLabelText("User menu");
       await user.click(trigger);
 
       await waitFor(() => {
         const items = screen.getAllByRole("menuitem");
-        expect(items).toHaveLength(4);
+        // 3 nav items + Theme sub-trigger + Sign out = 5
+        expect(items).toHaveLength(5);
         expect(items[0]).toHaveTextContent("Guilds");
         expect(items[1]).toHaveTextContent("Characters");
         expect(items[2]).toHaveTextContent("Interface");
-        expect(items[3]).toHaveTextContent("Sign out");
+        expect(items[3]).toHaveTextContent("Theme");
+        expect(items[4]).toHaveTextContent("Sign out");
       });
     });
   });
@@ -101,14 +104,14 @@ describe("AvatarMenu", () => {
     it("removes menu content from DOM when Escape is pressed", async () => {
       mockAuthenticated();
       const user = userEvent.setup();
-      render(<AvatarMenu />);
+      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
 
       const trigger = screen.getByLabelText("User menu");
       await user.click(trigger);
 
       // Menu should be open
       await waitFor(() => {
-        expect(screen.getAllByRole("menuitem")).toHaveLength(4);
+        expect(screen.getAllByRole("menuitem")).toHaveLength(5);
       });
 
       // Press Escape
@@ -123,7 +126,7 @@ describe("AvatarMenu", () => {
   describe("ARIA roles (Req 5.1, 5.2)", () => {
     it('trigger has aria-label="User menu"', () => {
       mockAuthenticated();
-      render(<AvatarMenu />);
+      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
 
       const trigger = screen.getByLabelText("User menu");
       expect(trigger).toBeInTheDocument();
@@ -133,7 +136,7 @@ describe("AvatarMenu", () => {
     it('menu has role="menu" when open', async () => {
       mockAuthenticated();
       const user = userEvent.setup();
-      render(<AvatarMenu />);
+      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
 
       const trigger = screen.getByLabelText("User menu");
       await user.click(trigger);
@@ -147,14 +150,14 @@ describe("AvatarMenu", () => {
     it('items have role="menuitem"', async () => {
       mockAuthenticated();
       const user = userEvent.setup();
-      render(<AvatarMenu />);
+      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
 
       const trigger = screen.getByLabelText("User menu");
       await user.click(trigger);
 
       await waitFor(() => {
         const items = screen.getAllByRole("menuitem");
-        expect(items).toHaveLength(MENU_ITEMS.length + 1); // +1 for Sign out
+        expect(items).toHaveLength(MENU_ITEMS.length + 2); // +1 for Theme sub-trigger, +1 for Sign out
         for (const item of items) {
           expect(item).toHaveAttribute("role", "menuitem");
         }
@@ -166,7 +169,7 @@ describe("AvatarMenu", () => {
     it("trigger button can receive focus via Tab", async () => {
       mockAuthenticated();
       const user = userEvent.setup();
-      render(<AvatarMenu />);
+      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
 
       // Tab into the trigger
       await user.tab();

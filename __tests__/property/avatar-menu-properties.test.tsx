@@ -278,6 +278,7 @@ vi.mock("next/navigation", () => ({
 import { render, screen, fireEvent, cleanup, within } from "@testing-library/react";
 import { useSession } from "next-auth/react";
 import { AppBar } from "@/components/layout/app-bar";
+import { ThemeProvider } from "@/components/theme-provider";
 
 // ── Arbitraries for Property 1 ──
 
@@ -346,7 +347,7 @@ describe("Property 1: Auth-state determines rendered UI", () => {
       fc.property(arbSessionState, (sessionState) => {
         vi.mocked(useSession).mockReturnValue(sessionState as any);
 
-        const { unmount, container } = render(<AppBar />);
+        const { unmount, container } = render(<ThemeProvider><AppBar /></ThemeProvider>);
 
         const signInLink = screen.queryByRole("link", { name: /sign in/i });
         // Loading state renders a circular skeleton placeholder (div with animate-pulse)
@@ -382,7 +383,7 @@ describe("Property 1: Auth-state determines rendered UI", () => {
       fc.property(arbAuthenticatedState, (sessionState) => {
         vi.mocked(useSession).mockReturnValue(sessionState as any);
 
-        const { unmount, container } = render(<AppBar />);
+        const { unmount, container } = render(<ThemeProvider><AppBar /></ThemeProvider>);
 
         expect(screen.queryByLabelText("User menu")).not.toBeNull();
         expect(screen.queryByRole("link", { name: /sign in/i })).toBeNull();
@@ -399,7 +400,7 @@ describe("Property 1: Auth-state determines rendered UI", () => {
       fc.property(arbUnauthenticatedState, (sessionState) => {
         vi.mocked(useSession).mockReturnValue(sessionState as any);
 
-        const { unmount, container } = render(<AppBar />);
+        const { unmount, container } = render(<ThemeProvider><AppBar /></ThemeProvider>);
 
         expect(screen.queryByRole("link", { name: /sign in/i })).not.toBeNull();
         expect(screen.queryByLabelText("User menu")).toBeNull();
@@ -416,7 +417,7 @@ describe("Property 1: Auth-state determines rendered UI", () => {
       fc.property(arbLoadingState, (sessionState) => {
         vi.mocked(useSession).mockReturnValue(sessionState as any);
 
-        const { unmount, container } = render(<AppBar />);
+        const { unmount, container } = render(<ThemeProvider><AppBar /></ThemeProvider>);
 
         expect(container.querySelector(".animate-pulse")).not.toBeNull();
         expect(screen.queryByRole("link", { name: /sign in/i })).toBeNull();
@@ -500,7 +501,7 @@ describe("Property 2: Avatar image source matches session", () => {
           update: vi.fn(),
         });
 
-        const { unmount, container } = render(<AvatarMenu />);
+        const { unmount, container } = render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
 
         // With the Image mock, Radix Avatar.Image renders the <img> element
         const imgElement = container.querySelector("img");
@@ -558,7 +559,7 @@ describe("Property 5: Menu item href correctness", () => {
           });
 
           // Render the AvatarMenu to verify it mounts with the authenticated session
-          const { unmount: unmountMenu, baseElement } = render(<AvatarMenu />);
+          const { unmount: unmountMenu, baseElement } = render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
           expect(
             within(baseElement).getByLabelText("User menu")
           ).toBeDefined();
@@ -609,7 +610,7 @@ describe("Property 5: Menu item href correctness", () => {
         });
 
         // Verify AvatarMenu mounts correctly with the session
-        const { unmount: unmountMenu, baseElement } = render(<AvatarMenu />);
+        const { unmount: unmountMenu, baseElement } = render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
         expect(
           within(baseElement).getByLabelText("User menu")
         ).toBeDefined();
