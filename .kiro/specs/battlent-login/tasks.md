@@ -1,0 +1,83 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Bug Condition** - OIDC Provider Missing State Parameter
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the buggy `type: "oidc"` configuration
+  - **Scoped PBT Approach**: Scope the property to the concrete failing case: provider configured with `type: "oidc"` and no explicit endpoint URLs
+  - Create test file `__tests__/property/battlenet-provider-bugfix.test.ts`
+  - Import `BattleNetProvider` from `@/lib/auth/battlenet-provider`
+  - Write property-based test using `fast-check`:
+    - Generate arbitrary `clientId` and `clientSecret` strings
+    - Instantiate `BattleNetProvider({ clientId, clientSecret })`
+    - Assert `provider.type === "oauth"` (expected behavior from design)
+    - Assert `provider.authorization.url` is explicitly set to `"https://oauth.battle.net/authorize"`
+    - Assert `provider.token.url` is explicitly set to `"https://oauth.battle.net/token"`
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS because current provider has `type: "oidc"`, no explicit `authorization.url`, and no explicit `token.url`
+  - Document counterexamples: provider returns `type: "oidc"` with `issuer: "https://oauth.battle.net"` instead of explicit OAuth endpoints
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2_
+
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Profile Mapping, Provider Identity, and Scope Behavior
+  - **IMPORTANT**: Follow observation-first methodology
+  - Create preservation tests in `__tests__/property/battlenet-provider-bugfix.test.ts` (same file as task 1)
+  - Observe on UNFIXED code:
+    - `BattleNetProvider({ clientId: "x", clientSecret: "y" }).id` returns `"battlenet"`
+    - `BattleNetProvider({ clientId: "x", clientSecret: "y" }).name` returns `"Battle.net"`
+    - `profile({ sub: "12345", id: 1, battletag: "Player#1234" })` returns `{ id: "12345", name: "Player#1234", email: null, image: null }`
+    - Authorization params include `scope: "openid wow.profile"`
+  - Write property-based tests using `fast-check`:
+    - Generate arbitrary `BattleNetProfile` objects (random `sub` string, random `id` number, random `battletag` string)
+    - Assert `profile()` always returns `{ id: profile.sub, name: profile.battletag, email: null, image: null }`
+    - Assert provider `id` is always `"battlenet"` for any config
+    - Assert provider `name` is always `"Battle.net"` for any config
+    - Assert authorization params always include `scope` containing `"openid wow.profile"`
+  - Write unit-style preservation tests for `jwt` and `session` callbacks in `lib/auth/auth.ts`:
+    - Verify `jwt` callback stores `account.access_token` in token and `profile.battletag` in token
+    - Verify `session` callback exposes `accessToken` and `user.battletag` on session object
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: All preservation tests PASS (confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4_
+
+- [x] 3. Fix Battle.net provider OIDC-to-OAuth migration
+
+  - [x] 3.1 Implement the fix in `lib/auth/battlenet-provider.ts`
+    - Change `type` from `"oidc"` to `"oauth"`
+    - Remove `issuer: "https://oauth.battle.net"` (no longer needed for OAuth flow)
+    - Add explicit authorization endpoint: `authorization: { url: "https://oauth.battle.net/authorize", params: { scope: "openid wow.profile" } }`
+    - Add explicit token endpoint: `token: { url: "https://oauth.battle.net/token" }`
+    - Add explicit userinfo endpoint: `userinfo: { url: "https://oauth.battle.net/userinfo" }`
+    - Keep `id`, `name`, `profile()` function, and `...config` spread unchanged
+    - _Bug_Condition: isBugCondition(providerConfig) where providerConfig.type == "oidc" AND no explicit endpoint URLs_
+    - _Expected_Behavior: providerConfig.type == "oauth" AND authorization.url == "https://oauth.battle.net/authorize" AND token.url == "https://oauth.battle.net/token"_
+    - _Preservation: Provider ID "battlenet", name "Battle.net", profile() mapping, scope "openid wow.profile", jwt/session callbacks unchanged_
+    - _Requirements: 1.1, 1.2, 2.1, 2.2, 3.1, 3.2, 3.3, 3.4_
+
+  - [x] 3.2 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - OIDC Provider Missing State Parameter
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior (type "oauth", explicit endpoints)
+    - When this test passes, it confirms the provider is correctly configured for OAuth flow with state handling
+    - Run bug condition exploration test from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - _Requirements: 2.1, 2.2_
+
+  - [x] 3.3 Verify preservation tests still pass
+    - **Property 2: Preservation** - Profile Mapping, Provider Identity, and Scope Behavior
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm profile mapping, provider ID, name, scopes, and callback behavior are all unchanged
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Run full test suite with `vitest run`
+  - Ensure all bug condition tests pass (provider type is "oauth", explicit endpoints present)
+  - Ensure all preservation tests pass (profile mapping, provider identity, scopes, callbacks unchanged)
+  - Ensure no regressions in existing test suites (`__tests__/unit/`, `__tests__/property/`)
+  - Ask the user if questions arise

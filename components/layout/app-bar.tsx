@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { AvatarMenu } from "@/components/layout/avatar-menu";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -44,31 +45,13 @@ export function AppBar() {
 
         <div className="flex items-center gap-3">
           {status === "loading" && (
-            <span className="text-sm text-muted-foreground">Loading…</span>
+            <div
+              className="h-8 w-8 animate-pulse rounded-full bg-muted"
+              aria-hidden="true"
+            />
           )}
           {status === "authenticated" && session?.user && (
-            <>
-              <Link
-                href="/account"
-                className={cn(
-                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                  pathname === "/account"
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground"
-                )}
-              >
-                Account
-              </Link>
-              <span className="hidden text-sm text-muted-foreground sm:inline">
-                {session.user.name ?? "Authenticated"}
-              </span>
-              <Link
-                href="/signout"
-                className="rounded-md border border-input px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                Sign out
-              </Link>
-            </>
+            <AvatarMenu />
           )}
           {status === "unauthenticated" && (
             <Link
