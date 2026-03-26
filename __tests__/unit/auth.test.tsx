@@ -28,7 +28,7 @@ describe("Battle.net provider configuration", () => {
     expect(provider.name).toBe("Battle.net");
   });
 
-  it("uses the Battle.net OIDC issuer", async () => {
+  it("uses OIDC issuer for automatic endpoint discovery", async () => {
     const BattleNetProvider = (await import("@/lib/auth/battlenet-provider")).default;
     const provider = BattleNetProvider({ clientId: "id", clientSecret: "secret" });
     expect(provider.issuer).toBe("https://oauth.battle.net");
@@ -124,7 +124,7 @@ describe("Auth error handling", () => {
   it("Battle.net provider profile callback maps sub to id", async () => {
     const BattleNetProvider = (await import("@/lib/auth/battlenet-provider")).default;
     const provider = BattleNetProvider({ clientId: "id", clientSecret: "secret" });
-    const profile = provider.profile!({ sub: "12345", id: 99, battletag: "Test#1234" }, {} as any);
+    const profile = provider.profile!({ sub: "12345", id: 99, battle_tag: "Test#1234" }, {} as any);
     expect((profile as any).id).toBe("12345");
     expect((profile as any).name).toBe("Test#1234");
   });
@@ -132,7 +132,7 @@ describe("Auth error handling", () => {
   it("Battle.net provider profile callback sets email and image to null", async () => {
     const BattleNetProvider = (await import("@/lib/auth/battlenet-provider")).default;
     const provider = BattleNetProvider({ clientId: "id", clientSecret: "secret" });
-    const profile = provider.profile!({ sub: "12345", id: 99, battletag: "Test#1234" }, {} as any);
+    const profile = provider.profile!({ sub: "12345", id: 99, battle_tag: "Test#1234" }, {} as any);
     expect((profile as any).email).toBeNull();
     expect((profile as any).image).toBeNull();
   });
