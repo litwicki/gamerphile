@@ -7,6 +7,7 @@ import * as Avatar from "@radix-ui/react-avatar";
 import { User } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { ThemeSubMenu } from "@/components/layout/theme-switcher";
+import { RegionSubMenu } from "@/components/layout/region-selector";
 
 export interface MenuItemConfig {
   label: string;
@@ -70,6 +71,7 @@ export function AvatarMenu() {
           ))}
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
           <ThemeSubMenu />
+          <RegionSubMenu />
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
           <DropdownMenu.Item
             onSelect={() => signOut({ callbackUrl: "/" })}

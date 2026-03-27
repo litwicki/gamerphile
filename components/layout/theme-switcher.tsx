@@ -24,11 +24,11 @@ export function ThemeSubMenu() {
             <DropdownMenu.Item
               key={t.id}
               onSelect={() => setTheme(t.id)}
-              className="flex w-full cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm text-popover-foreground outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+              className="flex w-full cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent focus:bg-accent"
             >
               {theme === t.id && <Check className="mr-2 h-3 w-3" />}
               {theme !== t.id && <span className="mr-2 w-3" />}
-              {t.label}
+              <span className={t.colorClass}>{t.label}</span>
             </DropdownMenu.Item>
           ))}
         </DropdownMenu.SubContent>

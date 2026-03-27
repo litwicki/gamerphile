@@ -223,4 +223,5 @@ And the Layout tsx:
     }
 ```
 
+
 Using our classcolors that we implemented earlier, create a theme for each "class".

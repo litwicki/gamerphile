@@ -7,14 +7,16 @@ import UIShowcasePage from "@/app/ui/page";
 // ─── 8.7 Static route rendering (/, /news, /ui) (Req 5.1, 5.2, 5.3) ───
 
 describe("Home page (/)", () => {
-  it("renders the Gamerphile heading", () => {
+  it("renders the bento grid sections", () => {
     render(<HomePage />);
-    expect(screen.getByText("Gamerphile")).toBeInTheDocument();
+    expect(screen.getByText("Blue Tracker")).toBeInTheDocument();
+    expect(screen.getByText("Leaderboards")).toBeInTheDocument();
   });
 
-  it("renders a description mentioning World of Warcraft", () => {
+  it("renders the Gamers and UI sections", () => {
     render(<HomePage />);
-    expect(screen.getByText(/world of warcraft/i)).toBeInTheDocument();
+    expect(screen.getByText("Gamers")).toBeInTheDocument();
+    expect(screen.getByText("UI")).toBeInTheDocument();
   });
 });
 

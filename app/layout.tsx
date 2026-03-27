@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthSessionProvider } from "@/components/layout/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { RegionProvider } from "@/components/region-provider";
 import { AppBar } from "@/components/layout/app-bar";
 import { Footer } from "@/components/layout/footer";
 
@@ -23,9 +24,13 @@ export default function RootLayout({
       <body className={`${inter.className} flex min-h-screen flex-col`}>
         <AuthSessionProvider>
           <ThemeProvider>
-            <AppBar />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <RegionProvider>
+              <div className="flex min-h-screen flex-col bg-background/90">
+                <AppBar />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </div>
+            </RegionProvider>
           </ThemeProvider>
         </AuthSessionProvider>
       </body>

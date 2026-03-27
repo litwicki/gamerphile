@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { AvatarMenu } from "@/components/layout/avatar-menu";
+import { RegionSelector } from "@/components/layout/region-selector";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -21,7 +22,7 @@ export function AppBar() {
       <div className="mx-auto flex h-14 max-w-7xl items-center px-4 sm:px-6">
         <Link href="/" className="mr-6 flex items-center gap-2 font-bold tracking-tight">
           <span className="text-lg">🎮</span>
-          <span>Gamerphile</span>
+          <span className="text-primary">Gamerphile</span>
         </Link>
 
         <nav className="flex items-center gap-1" aria-label="Main navigation">
@@ -54,12 +55,15 @@ export function AppBar() {
             <AvatarMenu />
           )}
           {status === "unauthenticated" && (
-            <Link
-              href="/signin"
-              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Sign in
-            </Link>
+            <>
+              <RegionSelector />
+              <Link
+                href="/signin"
+                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Sign in
+              </Link>
+            </>
           )}
         </div>
       </div>

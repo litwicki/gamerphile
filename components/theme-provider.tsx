@@ -19,17 +19,21 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState("default");
+  const [theme, setThemeState] = useState("midnight");
 
   // On mount, read persisted theme
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored && WOW_THEMES.some((t) => t.id === stored)) {
       setThemeState(stored);
+    } else if (stored === "default") {
+      // migrate legacy default to midnight
+      setThemeState("midnight");
+      localStorage.setItem(STORAGE_KEY, "midnight");
     }
   }, []);
 
-  // Apply CSS class to <html> whenever theme changes
+  // Apply CSS class and background image whenever theme changes
   useEffect(() => {
     const html = document.documentElement;
     // Remove all theme-* classes
@@ -41,6 +45,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const entry = WOW_THEMES.find((t) => t.id === theme);
     if (entry?.cssClass) {
       html.classList.add(entry.cssClass);
+    }
+
+    // Apply background image to body
+    if (entry?.backgroundImage) {
+      document.body.style.backgroundImage = `url('${entry.backgroundImage}')`;
     }
   }, [theme]);
 

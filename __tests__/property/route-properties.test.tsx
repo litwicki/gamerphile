@@ -83,7 +83,7 @@ describe("Property 5: Dynamic Route Renders Character Page", () => {
 describe("Property 6: Public Routes Accessible Without Auth", () => {
   it("Home page renders without auth", () => {
     const { unmount } = render(<HomePage />);
-    expect(screen.getByText("Gamerphile")).toBeInTheDocument();
+    expect(screen.getByText("Blue Tracker")).toBeInTheDocument();
     unmount();
   });
 
