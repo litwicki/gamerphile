@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthSessionProvider } from "@/components/layout/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { RegionProvider } from "@/components/region-provider";
+import { UltrawideProvider } from "@/components/ultrawide-provider";
 import { AppBar } from "@/components/layout/app-bar";
 import { Footer } from "@/components/layout/footer";
 
@@ -25,11 +26,13 @@ export default function RootLayout({
         <AuthSessionProvider>
           <ThemeProvider>
             <RegionProvider>
-              <div className="flex min-h-screen flex-col bg-background/90">
-                <AppBar />
-                <main className="flex-1">{children}</main>
-                <Footer />
-              </div>
+              <UltrawideProvider>
+                <div className="flex min-h-screen flex-col bg-background/90">
+                  <AppBar />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                </div>
+              </UltrawideProvider>
             </RegionProvider>
           </ThemeProvider>
         </AuthSessionProvider>

@@ -201,30 +201,32 @@ export default function CharactersPage() {
       </div>
 
       {/* Filters */}
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <select value={classFilter} onChange={(e) => setClassFilter(e.target.value)} className={selectClass} aria-label="Filter by class">
-          <option value="">All Classes</option>
-          {classes.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <select value={realmFilter} onChange={(e) => setRealmFilter(e.target.value)} className={selectClass} aria-label="Filter by realm">
-          <option value="">All Realms</option>
-          {realms.map((r) => <option key={r} value={r}>{r}</option>)}
-        </select>
-        <select value={guildFilter} onChange={(e) => setGuildFilter(e.target.value)} className={selectClass} aria-label="Filter by guild">
-          <option value="">All Guilds</option>
-          {guilds.map((g) => <option key={g} value={g}>{g}</option>)}
-        </select>
-        <input
-          type="number"
-          placeholder="Min level"
-          value={levelFilter}
-          onChange={(e) => setLevelFilter(e.target.value)}
-          className={`${selectClass} w-24`}
-          aria-label="Minimum level"
-        />
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="flex flex-wrap gap-2">
+          <select value={classFilter} onChange={(e) => setClassFilter(e.target.value)} className={selectClass} aria-label="Filter by class">
+            <option value="">All Classes</option>
+            {classes.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select value={realmFilter} onChange={(e) => setRealmFilter(e.target.value)} className={selectClass} aria-label="Filter by realm">
+            <option value="">All Realms</option>
+            {realms.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+          <select value={guildFilter} onChange={(e) => setGuildFilter(e.target.value)} className={selectClass} aria-label="Filter by guild">
+            <option value="">All Guilds</option>
+            {guilds.map((g) => <option key={g} value={g}>{g}</option>)}
+          </select>
+          <input
+            type="number"
+            placeholder="Min level"
+            value={levelFilter}
+            onChange={(e) => setLevelFilter(e.target.value)}
+            className={`${selectClass} w-20`}
+            aria-label="Minimum level"
+          />
+        </div>
 
         {/* Sort buttons */}
-        <div className="ml-auto flex gap-1">
+        <div className="flex flex-wrap gap-1 sm:ml-auto">
           {(["level", "class", "realm", "mplus", "progression"] as SortField[]).map((f) => {
             const labels: Record<SortField, string> = { level: "Level", class: "Class", realm: "Realm", mplus: "M+", progression: "Prog" };
             return (

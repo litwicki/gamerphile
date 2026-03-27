@@ -4,10 +4,11 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Avatar from "@radix-ui/react-avatar";
-import { User } from "lucide-react";
+import { User, Monitor } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { ThemeSubMenu } from "@/components/layout/theme-switcher";
 import { RegionSubMenu } from "@/components/layout/region-selector";
+import { useUltrawide } from "@/components/ultrawide-provider";
 
 export interface MenuItemConfig {
   label: string;
@@ -22,6 +23,7 @@ export const MENU_ITEMS: MenuItemConfig[] = [
 
 export function AvatarMenu() {
   const { data: session } = useSession();
+  const { ultrawide, setUltrawide } = useUltrawide();
 
   const userImage = session?.user?.image;
   const userName = session?.user?.name;
@@ -72,6 +74,14 @@ export function AvatarMenu() {
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
           <ThemeSubMenu />
           <RegionSubMenu />
+          <DropdownMenu.Item
+            onSelect={() => setUltrawide(!ultrawide)}
+            className="flex w-full cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm text-popover-foreground outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          >
+            <Monitor className="mr-2 h-4 w-4" />
+            Ultrawide
+            <span className="ml-auto text-xs text-muted-foreground">{ultrawide ? "On" : "Off"}</span>
+          </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
           <DropdownMenu.Item
             onSelect={() => signOut({ callbackUrl: "/" })}
