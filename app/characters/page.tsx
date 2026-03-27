@@ -14,9 +14,14 @@ interface WoWCharacter {
   faction: { type: string; name: string };
   level: number;
   guild?: string;
+  avatar_url?: string;
+  inset_url?: string;
+  item_level?: number;
+  mplus_rating?: number;
+  raid_progression?: string;
 }
 
-type SortField = "level" | "class" | "realm";
+type SortField = "level" | "class" | "realm" | "mplus" | "progression";
 type SortDir = "asc" | "desc";
 
 /** Map class names to Tailwind color classes from our class-colors config */
@@ -38,6 +43,39 @@ const CLASS_COLOR_MAP: Record<string, string> = {
 
 function classColor(className: string): string {
   return CLASS_COLOR_MAP[className] ?? "text-foreground";
+}
+
+/** Map class names to muted border color classes */
+const CLASS_BORDER_MAP: Record<string, string> = {
+  "Death Knight": "border-death-knight/40",
+  "Demon Hunter": "border-demon-hunter/40",
+  Druid: "border-druid/40",
+  Evoker: "border-evoker/40",
+  Hunter: "border-hunter/40",
+  Mage: "border-mage/40",
+  Monk: "border-monk/40",
+  Paladin: "border-paladin/40",
+  Priest: "border-priest/40",
+  Rogue: "border-rogue/40",
+  Shaman: "border-shaman/40",
+  Warlock: "border-warlock/40",
+  Warrior: "border-warrior/40",
+};
+
+function classBorder(className: string): string {
+  return CLASS_BORDER_MAP[className] ?? "border-border";
+}
+
+/** Parse raid progression string like "8/8 M" into a sortable number */
+function progressionScore(prog: string | undefined): number {
+  if (!prog) return 0;
+  const m = prog.match(/(\d+)\/(\d+)\s*(\w)?/);
+  if (!m) return 0;
+  const killed = Number(m[1]);
+  const total = Number(m[2]);
+  const diff = m[3]?.toUpperCase();
+  const diffWeight = diff === "M" ? 3 : diff === "H" ? 2 : diff === "N" ? 1 : 0;
+  return diffWeight * 100 + (killed / Math.max(total, 1)) * 99;
 }
 
 export default function CharactersPage() {
@@ -106,6 +144,8 @@ export default function CharactersPage() {
       if (sortField === "level") cmp = a.level - b.level;
       else if (sortField === "class") cmp = a.playable_class.name.localeCompare(b.playable_class.name);
       else if (sortField === "realm") cmp = a.realm.name.localeCompare(b.realm.name);
+      else if (sortField === "mplus") cmp = (a.mplus_rating ?? 0) - (b.mplus_rating ?? 0);
+      else if (sortField === "progression") cmp = progressionScore(a.raid_progression) - progressionScore(b.raid_progression);
       return sortDir === "desc" ? -cmp : cmp;
     });
     return arr;
@@ -185,17 +225,20 @@ export default function CharactersPage() {
 
         {/* Sort buttons */}
         <div className="ml-auto flex gap-1">
-          {(["level", "class", "realm"] as SortField[]).map((f) => (
-            <button
-              key={f}
-              onClick={() => toggleSort(f)}
-              className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
-                sortField === f ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"
-              }`}
-            >
-              {f.charAt(0).toUpperCase() + f.slice(1)}{sortIndicator(f)}
-            </button>
-          ))}
+          {(["level", "class", "realm", "mplus", "progression"] as SortField[]).map((f) => {
+            const labels: Record<SortField, string> = { level: "Level", class: "Class", realm: "Realm", mplus: "M+", progression: "Prog" };
+            return (
+              <button
+                key={f}
+                onClick={() => toggleSort(f)}
+                className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+                  sortField === f ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"
+                }`}
+              >
+                {labels[f]}{sortIndicator(f)}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -205,21 +248,64 @@ export default function CharactersPage() {
           <Link
             key={char.id}
             href={`/${char.realm.slug}/us/${char.name.toLowerCase()}`}
-            className="flex flex-col rounded-lg border border-border bg-card/70 p-4 transition-colors hover:bg-accent/30"
+            className={`group relative flex overflow-hidden rounded-lg border-2 ${classBorder(char.playable_class.name)} bg-card/70 shadow-lg shadow-black/20 transition-all hover:bg-accent/30 hover:shadow-xl hover:shadow-black/30`}
           >
-            <div className="flex items-center justify-between">
-              <span className={`text-sm font-semibold ${classColor(char.playable_class.name)}`}>
-                {char.name}
-              </span>
-              <span className="text-xs font-mono text-muted-foreground">{char.level}</span>
-            </div>
-            <span className={`mt-0.5 text-xs ${classColor(char.playable_class.name)}`}>
-              {char.playable_race.name} {char.playable_class.name}
-            </span>
-            <span className="mt-1 text-xs text-muted-foreground">{char.realm.name}</span>
-            {char.guild && (
-              <span className="mt-0.5 text-xs text-muted-foreground/70">&lt;{char.guild}&gt;</span>
+            {/* Inset background image */}
+            {char.inset_url && (
+              <img
+                src={char.inset_url}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-20 transition-opacity group-hover:opacity-30"
+              />
             )}
+            <div className="relative flex w-full gap-3 p-3">
+              {/* Avatar */}
+              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border border-border/50 bg-muted">
+                {char.avatar_url ? (
+                  <img src={char.avatar_url} alt={char.name} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                    {char.level}
+                  </div>
+                )}
+              </div>
+              {/* Info */}
+              <div className="flex flex-1 flex-col justify-center overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <span className={`truncate text-sm font-semibold ${classColor(char.playable_class.name)}`}>
+                    {char.name}
+                  </span>
+                  <span className="ml-2 text-xs font-mono text-muted-foreground">{char.level}</span>
+                </div>
+                <span className={`text-xs ${classColor(char.playable_class.name)}`}>
+                  {char.playable_race.name} {char.playable_class.name}
+                </span>
+                <span className="text-xs text-muted-foreground">{char.realm.name}</span>
+                {char.guild && (
+                  <span className="text-xs text-muted-foreground/70">&lt;{char.guild}&gt;</span>
+                )}
+                {/* Stats row */}
+                {(char.item_level || char.mplus_rating || char.raid_progression) && (
+                  <div className="mt-1 flex flex-wrap gap-2 text-xs">
+                    {char.item_level != null && (
+                      <span className="rounded bg-muted/60 px-1.5 py-0.5 font-mono text-foreground/80">
+                        {char.item_level} ilvl
+                      </span>
+                    )}
+                    {char.mplus_rating != null && char.mplus_rating > 0 && (
+                      <span className="rounded bg-muted/60 px-1.5 py-0.5 font-mono text-foreground/80">
+                        {Math.round(char.mplus_rating)} M+
+                      </span>
+                    )}
+                    {char.raid_progression && (
+                      <span className="rounded bg-muted/60 px-1.5 py-0.5 font-mono text-foreground/80">
+                        {char.raid_progression}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </Link>
         ))}
       </div>

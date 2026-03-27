@@ -12,6 +12,11 @@ export interface WoWCharacterSummary {
   faction: { type: string; name: string };
   level: number;
   guild?: string;
+  avatar_url?: string;
+  inset_url?: string;
+  item_level?: number;
+  mplus_rating?: number;
+  raid_progression?: string;
 }
 
 export async function GET() {
@@ -86,6 +91,63 @@ export async function GET() {
 
     // Sort by level descending by default
     characters.sort((a, b) => b.level - a.level);
+
+    // Fetch character media in parallel (avatar + inset images)
+    const accessToken = session.accessToken;
+    await Promise.all(
+      characters.map(async (char) => {
+        try {
+          const name = char.name.toLowerCase();
+          const realm = char.realm.slug;
+          const res = await fetch(
+            `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${encodeURIComponent(name)}/character-media?namespace=profile-${region}`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+          if (!res.ok) return;
+          const media = await res.json();
+          const assets = media.assets as { key: string; value: string }[] | undefined;
+          char.avatar_url = assets?.find((a) => a.key === "avatar")?.value;
+          char.inset_url = assets?.find((a) => a.key === "inset")?.value;
+        } catch {
+          // silently skip media fetch failures
+        }
+      })
+    );
+
+    // Enrich max-level characters with Raider.IO data (ilvl, M+ rating, raid prog)
+    const maxLevel = Math.max(...characters.map((c) => c.level), 0);
+    const enrichTargets = characters.filter((c) => c.level >= maxLevel - 1);
+    const rioApiKey = process.env.RAIDERIO_API_KEY;
+    const rioKeyParam = rioApiKey ? `&access_key=${rioApiKey}` : "";
+
+    // Batch in groups of 10 to respect rate limits
+    for (let i = 0; i < enrichTargets.length; i += 10) {
+      const batch = enrichTargets.slice(i, i + 10);
+      await Promise.all(
+        batch.map(async (char) => {
+          try {
+            const res = await fetch(
+              `https://raider.io/api/v1/characters/profile?region=${region}&realm=${char.realm.slug}&name=${encodeURIComponent(char.name)}&fields=gear,mythic_plus_scores_by_season:current,raid_progression${rioKeyParam}`,
+              { signal: AbortSignal.timeout(5000) }
+            );
+            if (!res.ok) return;
+            const data = await res.json();
+            char.item_level = data.gear?.item_level_equipped ?? undefined;
+            const scores = data.mythic_plus_scores_by_season?.[0]?.scores;
+            char.mplus_rating = scores?.all ?? undefined;
+            // Get the most recent raid progression summary
+            const raidProg = data.raid_progression;
+            if (raidProg && typeof raidProg === "object") {
+              const entries = Object.values(raidProg) as { summary?: string }[];
+              const best = entries.find((e) => e.summary && e.summary.length > 0);
+              char.raid_progression = best?.summary ?? undefined;
+            }
+          } catch {
+            // silently skip Raider.IO failures
+          }
+        })
+      );
+    }
 
     return NextResponse.json({ characters });
   } catch (e) {
