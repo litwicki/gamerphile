@@ -45,6 +45,22 @@ function classColor(className: string): string {
   return CLASS_COLOR_MAP[className] ?? "text-foreground";
 }
 
+const CLASS_THEME_MAP: Record<string, string> = {
+  "Death Knight": "theme-death-knight",
+  "Demon Hunter": "theme-demon-hunter",
+  Druid: "theme-druid",
+  Evoker: "theme-evoker",
+  Hunter: "theme-hunter",
+  Mage: "theme-mage",
+  Monk: "theme-monk",
+  Paladin: "theme-paladin",
+  Priest: "theme-priest",
+  Rogue: "theme-rogue",
+  Shaman: "theme-shaman",
+  Warlock: "theme-warlock",
+  Warrior: "theme-warrior",
+};
+
 /** Map class names to muted border color classes */
 const CLASS_BORDER_MAP: Record<string, string> = {
   "Death Knight": "border-death-knight/40",
@@ -108,6 +124,33 @@ export default function CharactersPage() {
       .catch(() => setError("Failed to load characters"))
       .finally(() => setLoading(false));
   }, [status]);
+
+  // Apply the highest-level character's class theme; restore saved theme on unmount.
+  useEffect(() => {
+    if (characters.length === 0) return;
+    const top = characters.reduce((a, b) => (b.level > a.level ? b : a));
+    const cssClass = CLASS_THEME_MAP[top.playable_class.name] ?? "theme-midnight";
+    const html = document.documentElement;
+    Array.from(html.classList)
+      .filter((c) => c.startsWith("theme-"))
+      .forEach((c) => html.classList.remove(c));
+    html.classList.add(cssClass);
+
+    return () => {
+      html.classList.remove(cssClass);
+      try {
+        const stored = localStorage.getItem("gamerphile-theme") || "midnight";
+        const valid = [
+          "midnight", "death-knight", "demon-hunter", "druid", "evoker",
+          "hunter", "mage", "monk", "paladin", "priest", "rogue",
+          "shaman", "warlock", "warrior",
+        ];
+        html.classList.add("theme-" + (valid.includes(stored) ? stored : "midnight"));
+      } catch {
+        html.classList.add("theme-midnight");
+      }
+    };
+  }, [characters]);
 
   // Derive unique filter options
   const classes = useMemo(

@@ -22,6 +22,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Blocking script: apply theme class before first paint to prevent FOUC */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('gamerphile-theme')||'midnight';var v=['midnight','death-knight','demon-hunter','druid','evoker','hunter','mage','monk','paladin','priest','rogue','shaman','warlock','warrior'];if(!v.includes(t))t='midnight';document.documentElement.classList.add('theme-'+t);}catch(e){document.documentElement.classList.add('theme-midnight');}})();`,
+          }}
+        />
+      </head>
       <body className={`${inter.className} flex min-h-screen flex-col`}>
         <AuthSessionProvider>
           <ThemeProvider>

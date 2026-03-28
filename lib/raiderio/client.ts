@@ -7,6 +7,8 @@ import type {
   RaidingStaticDataResponse,
   CharacterProfileParams,
   CharacterProfileResponse,
+  GuildProfileParams,
+  GuildProfileResponse,
 } from "./types";
 
 const BASE_URL = "https://raider.io";
@@ -76,4 +78,14 @@ export async function getRaidingStaticData(expansionId: number): Promise<Raiding
     expansion_id: expansionId,
   });
   return fetchJson<RaidingStaticDataResponse>(url);
+}
+
+export async function getGuildProfile(params: GuildProfileParams): Promise<GuildProfileResponse> {
+  const url = buildUrl("/api/v1/guilds/profile", {
+    region: params.region,
+    realm: params.realm,
+    name: params.name,
+    fields: params.fields,
+  });
+  return fetchJson<GuildProfileResponse>(url);
 }

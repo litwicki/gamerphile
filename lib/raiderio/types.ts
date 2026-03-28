@@ -143,3 +143,70 @@ export interface CharacterProfileResponse {
   profile_url: string;
   [key: string]: unknown;
 }
+
+export interface RaidProgressionSummary {
+  summary: string;
+  total_bosses: number;
+  normal_bosses_killed: number;
+  heroic_bosses_killed: number;
+  mythic_bosses_killed: number;
+}
+
+export interface MythicPlusBestRun {
+  dungeon: string;
+  short_name: string;
+  mythic_level: number;
+  completed_at: string;
+  clear_time_ms: number;
+  par_time_ms: number;
+  num_keystone_upgrades: number;
+  score: number;
+  url: string;
+}
+
+export interface MythicPlusSeasonScore {
+  season: string;
+  scores: { all: number; dps: number; healer: number; tank: number };
+}
+
+export interface CharacterGear {
+  item_level_equipped: number;
+  item_level_total: number;
+}
+
+export interface EnrichedCharacterProfile extends CharacterProfileResponse {
+  gear?: CharacterGear;
+  raid_progression?: Record<string, RaidProgressionSummary>;
+  mythic_plus_scores_by_season?: MythicPlusSeasonScore[];
+  mythic_plus_best_runs?: MythicPlusBestRun[];
+}
+
+export interface GuildProfileParams {
+  region: string;
+  realm: string;
+  name: string;
+  fields?: string;
+}
+
+export interface RaidRankingTier {
+  world: number;
+  region: number;
+  realm: number;
+}
+
+export interface GuildProfileResponse {
+  name: string;
+  faction: string;
+  region: { name: string; slug: string; short_name: string };
+  realm: { id: number; name: string; slug: string; locale: string; isConnected: boolean };
+  logo?: string;
+  color?: string;
+  profile_url: string;
+  raid_progression?: Record<string, RaidProgressionSummary>;
+  raid_rankings?: Record<string, {
+    mythic?: RaidRankingTier;
+    heroic?: RaidRankingTier;
+    normal?: RaidRankingTier;
+  }>;
+  [key: string]: unknown;
+}
