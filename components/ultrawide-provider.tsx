@@ -22,7 +22,7 @@ export function UltrawideProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--max-viewport",
-      ultrawide ? "1280px" : "1024px"
+      ultrawide ? "1920px" : "1280px"
     );
   }, [ultrawide]);
 

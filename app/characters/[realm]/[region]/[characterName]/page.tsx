@@ -5,6 +5,11 @@ import type { WoWRegion } from "@/lib/wow-api";
 import { getCharacterProfile } from "@/lib/raiderio/client";
 import type { EnrichedCharacterProfile } from "@/lib/raiderio/types";
 import { CharacterTheme } from "./character-theme";
+import { HeroSection } from "./hero-section";
+import { BentoGrid } from "./bento-grid";
+import { RaidHistoryTable } from "./raid-history-table";
+import { MPlusHistoryTable } from "./mplus-history-table";
+import { UserInterfacePlaceholder } from "./user-placeholder";
 
 const VALID_REGIONS: ReadonlySet<string> = new Set(["us", "eu", "kr", "tw"]);
 const PARAM_PATTERN = /^[a-zA-Z0-9\- ]+$/;
@@ -41,18 +46,10 @@ const CLASS_THEMES: Record<string, string> = {
   Warrior: "theme-warrior",
 };
 
-function msToTime(ms: number): string {
-  const total = Math.floor(ms / 1000);
-  const mins = Math.floor(total / 60);
-  const secs = total % 60;
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-}
 
 interface Props {
   params: Promise<{ realm: string; region: string; characterName: string }>;
 }
-
-const card = "rounded-lg border border-border bg-card/60 shadow-md shadow-black/30";
 
 export default async function CharacterDetailPage({ params }: Props) {
   const { realm, region, characterName } = await params;
@@ -114,157 +111,58 @@ export default async function CharacterDetailPage({ params }: Props) {
 
   const profile = profileData.data;
   const assets = mediaData?.ok ? mediaData.data.assets : [];
-  const avatarUrl = assets.find((a) => a.key === "avatar")?.value;
-  const insetUrl = assets.find((a) => a.key === "inset")?.value;
+  const mainRawUrl = assets.find((a) => a.key === "main-raw")?.value;
 
   const className = profile.character_class.name;
   const classColor = CLASS_COLORS[className] ?? "text-foreground";
   const classCssTheme = CLASS_THEMES[className] ?? "theme-midnight";
-  const currentSeason = rio?.mythic_plus_scores_by_season?.[0];
-  const mplusScore = currentSeason?.scores.all ?? 0;
-  const gear = rio?.gear;
+
+  const mplusScore = rio?.mythic_plus_scores_by_season?.[0]?.scores.all ?? 0;
   const raidProg = rio?.raid_progression;
-  const latestRaid = raidProg ? Object.values(raidProg)[0] : null;
-  const bestRuns = rio?.mythic_plus_best_runs?.slice(0, 6) ?? [];
+  const raidSummary = raidProg
+    ? Object.values(raidProg)[0]?.summary
+    : undefined;
+  const bestRuns = rio?.mythic_plus_best_runs ?? [];
+  const highestRun = bestRuns.length > 0
+    ? bestRuns.reduce((best, run) =>
+        run.mythic_level > best.mythic_level ? run : best
+      )
+    : undefined;
 
   return (
     <>
       <CharacterTheme cssClass={classCssTheme} />
-      <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6">
 
-        {/* Hero */}
-        <div className={`relative overflow-hidden rounded-xl ${card}`}>
-          {insetUrl && (
-            <img
-              src={insetUrl}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover opacity-15"
-            />
-          )}
-          <div className="relative flex flex-col gap-4 p-6 sm:flex-row sm:items-end">
-            <div className={`h-24 w-24 shrink-0 overflow-hidden rounded-full border-2 border-border bg-muted shadow-lg`}>
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={profile.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-muted-foreground">
-                  {profile.name[0]}
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col gap-1">
-              <h1 className={`text-4xl font-bold ${classColor}`}>
-                {profile.name}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {rio?.active_spec_name ? `${rio.active_spec_name} ` : ""}
-                {profile.race.name} {className}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Level {profile.level} &bull; {profile.realm.name} &bull;{" "}
-                <span className="uppercase">{region}</span>
-              </p>
-            </div>
-          </div>
+      <HeroSection
+        mainRawUrl={mainRawUrl}
+        classTheme={classCssTheme}
+        name={profile.name}
+        specName={rio?.active_spec_name}
+        raceName={profile.race.name}
+        className={className}
+        level={profile.level}
+        realmName={profile.realm.name}
+        region={region}
+        classColor={classColor}
+      />
+
+      <BentoGrid
+        raidSummary={raidSummary}
+        mplusScore={mplusScore}
+        highestRun={
+          highestRun
+            ? { dungeon: highestRun.dungeon, level: highestRun.mythic_level }
+            : undefined
+        }
+        hasTwitchIntegration={false}
+      />
+
+      <div className="mx-auto mt-8 w-full max-w-4xl px-4 sm:px-6">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <RaidHistoryTable raidProgression={raidProg} />
+          <MPlusHistoryTable bestRuns={bestRuns} />
+          <UserInterfacePlaceholder />
         </div>
-
-        {/* Stats row */}
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {gear && (
-            <div className={`${card} px-4 py-3 text-center`}>
-              <div className="font-mono text-2xl font-bold text-muted-foreground">
-                {gear.item_level_equipped}
-              </div>
-              <div className="text-xs text-muted-foreground/60">Item Level</div>
-            </div>
-          )}
-          {mplusScore > 0 && (
-            <div className={`${card} px-4 py-3 text-center`}>
-              <div className="font-mono text-2xl font-bold text-muted-foreground">
-                {Math.round(mplusScore)}
-              </div>
-              <div className="text-xs text-muted-foreground/60">M+ Score</div>
-            </div>
-          )}
-          {latestRaid && (
-            <div className={`${card} px-4 py-3 text-center`}>
-              <div className="font-mono text-2xl font-bold text-muted-foreground">
-                {latestRaid.summary}
-              </div>
-              <div className="text-xs text-muted-foreground/60">Raid Prog</div>
-            </div>
-          )}
-          <div className={`${card} px-4 py-3 text-center`}>
-            <div className="font-mono text-2xl font-bold text-muted-foreground">
-              {profile.achievement_points.toLocaleString()}
-            </div>
-            <div className="text-xs text-muted-foreground/60">Achievements</div>
-          </div>
-        </div>
-
-        {/* M+ Best Runs */}
-        {bestRuns.length > 0 && (
-          <section className="mt-6">
-            <h2 className="mb-3 text-lg font-semibold text-muted-foreground">Mythic+ Best Runs</h2>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {bestRuns.map((run, i) => (
-                <a
-                  key={i}
-                  href={run.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex items-center gap-3 ${card} px-3 py-2 transition-colors hover:bg-accent/30`}
-                >
-                  <span className="font-mono text-lg font-bold text-primary">
-                    +{run.mythic_level}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium text-muted-foreground">
-                      {run.dungeon}
-                    </div>
-                    <div className="text-xs text-muted-foreground/60">
-                      {msToTime(run.clear_time_ms)}
-                      {run.num_keystone_upgrades > 0 &&
-                        ` · +${run.num_keystone_upgrades}`}
-                    </div>
-                  </div>
-                  <span className="font-mono text-xs text-muted-foreground/60">
-                    {Math.round(run.score)}
-                  </span>
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Raid Progression */}
-        {raidProg && Object.keys(raidProg).length > 0 && (
-          <section className="mt-6">
-            <h2 className="mb-3 text-lg font-semibold text-muted-foreground">Raid Progression</h2>
-            <div className="flex flex-col gap-2">
-              {Object.entries(raidProg).map(([slug, prog]) => (
-                <div
-                  key={slug}
-                  className={`flex items-center justify-between ${card} px-4 py-3`}
-                >
-                  <span className="text-sm capitalize text-muted-foreground">
-                    {slug.replace(/-/g, " ")}
-                  </span>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
-                    <span>N: {prog.normal_bosses_killed}/{prog.total_bosses}</span>
-                    <span>H: {prog.heroic_bosses_killed}/{prog.total_bosses}</span>
-                    <span className="font-mono font-semibold text-muted-foreground">
-                      {prog.summary}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
 
         <Link
           href="/characters"
