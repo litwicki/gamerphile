@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { HeroSection } from "@/app/characters/[realm]/[region]/[characterName]/hero-section";
-import { BentoGrid } from "@/app/characters/[realm]/[region]/[characterName]/bento-grid";
-import { RaidHistoryTable } from "@/app/characters/[realm]/[region]/[characterName]/raid-history-table";
-import { MPlusHistoryTable } from "@/app/characters/[realm]/[region]/[characterName]/mplus-history-table";
-import { UserInterfacePlaceholder } from "@/app/characters/[realm]/[region]/[characterName]/user-placeholder";
-import CharacterDetailLoading from "@/app/characters/[realm]/[region]/[characterName]/loading";
+import { HeroSection } from "@/app/[region]/[realm]/[characterName]/hero-section";
+import { BentoGrid } from "@/app/[region]/[realm]/[characterName]/bento-grid";
+import { RaidHistoryTable } from "@/app/[region]/[realm]/[characterName]/raid-history-table";
+import { MPlusHistoryTable } from "@/app/[region]/[realm]/[characterName]/mplus-history-table";
+import { UserInterfacePlaceholder } from "@/app/[region]/[realm]/[characterName]/user-placeholder";
+import CharacterDetailLoading from "@/app/[region]/[realm]/[characterName]/loading";
 
 // ─── 10.1 Unit tests for character-pages components ───
 

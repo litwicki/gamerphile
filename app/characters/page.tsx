@@ -3,6 +3,9 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRegion } from "@/components/region-provider";
+
+const VALID_REGIONS = new Set(["us", "eu", "kr", "tw"]);
 
 interface WoWCharacter {
   name: string;
@@ -96,6 +99,10 @@ function progressionScore(prog: string | undefined): number {
 
 export default function CharactersPage() {
   const { status } = useSession();
+  const { region: contextRegion } = useRegion();
+  const region = VALID_REGIONS.has(contextRegion.toLowerCase())
+    ? contextRegion.toLowerCase()
+    : "us";
   const [characters, setCharacters] = useState<WoWCharacter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -292,7 +299,7 @@ export default function CharactersPage() {
         {sorted.map((char) => (
           <Link
             key={char.id}
-            href={`/${char.realm.slug}/us/${char.name.toLowerCase()}`}
+            href={`/${region}/${char.realm.slug}/${char.name.toLowerCase()}`}
             className={`group relative flex overflow-hidden rounded-lg border-2 ${classBorder(char.playable_class.name)} bg-card/70 shadow-lg shadow-black/20 transition-all hover:bg-accent/30 hover:shadow-xl hover:shadow-black/30`}
           >
             {/* Inset background image */}

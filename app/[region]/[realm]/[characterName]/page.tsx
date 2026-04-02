@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { WoWApiClient } from "@/lib/wow-api";
@@ -49,6 +50,79 @@ const CLASS_THEMES: Record<string, string> = {
 
 interface Props {
   params: Promise<{ realm: string; region: string; characterName: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { realm, region, characterName } = await params;
+
+  if (
+    !VALID_REGIONS.has(region) ||
+    !realm ||
+    !characterName ||
+    !PARAM_PATTERN.test(realm) ||
+    !PARAM_PATTERN.test(characterName)
+  ) {
+    return {};
+  }
+
+  const client = new WoWApiClient({
+    clientId: process.env.BATTLENET_CLIENT_ID ?? "",
+    clientSecret: process.env.BATTLENET_CLIENT_SECRET ?? "",
+    region: region as WoWRegion,
+  });
+
+  const [profileResult, mediaResult] = await Promise.allSettled([
+    client.getCharacterProfile(realm, characterName),
+    client.getCharacterMedia(realm, characterName),
+  ]);
+
+  const profileData =
+    profileResult.status === "fulfilled" ? profileResult.value : null;
+
+  if (!profileData?.ok) {
+    return {};
+  }
+
+  const profile = profileData.data;
+  const regionUpper = region.toUpperCase();
+  const title = `${profile.name} - ${profile.realm.name} (${regionUpper}) | Gamerphile`;
+  const description = `Level ${profile.level} ${profile.race.name} ${profile.character_class.name} on ${profile.realm.name} (${regionUpper})`;
+
+  const mediaData =
+    mediaResult.status === "fulfilled" ? mediaResult.value : null;
+  const mainRawUrl = mediaData?.ok
+    ? mediaData.data.assets.find((a) => a.key === "main-raw")?.value
+    : undefined;
+
+  const metadata: Metadata = {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+      siteName: "Gamerphile",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+
+  if (mainRawUrl) {
+    metadata.openGraph!.images = [
+      {
+        url: mainRawUrl,
+        width: 1024,
+        height: 1024,
+        alt: `${profile.name} character render`,
+      },
+    ];
+    metadata.twitter!.images = [mainRawUrl];
+  }
+
+  return metadata;
 }
 
 export default async function CharacterDetailPage({ params }: Props) {

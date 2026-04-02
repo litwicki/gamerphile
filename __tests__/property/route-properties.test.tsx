@@ -39,14 +39,28 @@ const getCharacterProfileMock = vi.fn().mockResolvedValue({
   },
 });
 
+const getCharacterMediaMock = vi.fn().mockResolvedValue({
+  ok: true,
+  data: {
+    character: { id: 1, name: "TestChar" },
+    assets: [],
+  },
+});
+
 // Mock @/lib/wow-api
 vi.mock("@/lib/wow-api", () => ({
   WoWApiClient: vi.fn().mockImplementation(() => ({
     getCharacterProfile: getCharacterProfileMock,
+    getCharacterMedia: getCharacterMediaMock,
   })),
 }));
 
-import CharacterPage from "@/app/[realm]/[region]/[character]/page";
+// Mock @/lib/raiderio/client
+vi.mock("@/lib/raiderio/client", () => ({
+  getCharacterProfile: vi.fn().mockResolvedValue(null),
+}));
+
+import CharacterPage from "@/app/[region]/[realm]/[characterName]/page";
 import HomePage from "@/app/page";
 import NewsPage from "@/app/news/page";
 import UIShowcasePage from "@/app/ui/page";
@@ -59,14 +73,14 @@ const arbRegion = fc.constantFrom("us", "eu", "kr", "tw");
 // ── Property 5: Dynamic Route Renders Character Page ──
 
 describe("Property 5: Dynamic Route Renders Character Page", () => {
-  it("renders without crashing for valid realm/region/character", async () => {
+  it("renders without crashing for valid realm/region/characterName", async () => {
     await fc.assert(
       fc.asyncProperty(
         arbAlphaHyphen,
         arbRegion,
         arbAlphaHyphen,
-        async (realm, region, character) => {
-          const params = Promise.resolve({ realm, region, character });
+        async (realm, region, characterName) => {
+          const params = Promise.resolve({ realm, region, characterName });
           const jsx = await CharacterPage({ params });
           const { unmount } = render(jsx);
           expect(document.querySelector("div")).toBeTruthy();
@@ -105,8 +119,8 @@ describe("Property 6: Public Routes Accessible Without Auth", () => {
         arbAlphaHyphen,
         arbRegion,
         arbAlphaHyphen,
-        async (realm, region, character) => {
-          const params = Promise.resolve({ realm, region, character });
+        async (realm, region, characterName) => {
+          const params = Promise.resolve({ realm, region, characterName });
           const jsx = await CharacterPage({ params });
           const { unmount } = render(jsx);
           expect(document.querySelector("div")).toBeTruthy();

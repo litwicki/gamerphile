@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest";
 import * as fc from "fast-check";
 import { render } from "@testing-library/react";
-import { HeroSection } from "@/app/characters/[realm]/[region]/[characterName]/hero-section";
+import { HeroSection } from "@/app/[region]/[realm]/[characterName]/hero-section";
 import { WOW_THEMES } from "@/lib/themes";
 
 /**
@@ -310,7 +310,7 @@ describe("Property 3: Class-to-theme mapping", () => {
 
 
 // Feature: character-pages, Property 4: Raid widget displays progression summary
-import { BentoGrid } from "@/app/characters/[realm]/[region]/[characterName]/bento-grid";
+import { BentoGrid } from "@/app/[region]/[realm]/[characterName]/bento-grid";
 
 /**
  * Property 4: Raid widget displays progression summary
@@ -511,7 +511,7 @@ describe("Property 5: M+ widget displays score and highest key", () => {
 
 
 // Feature: character-pages, Property 6: Raid history rows contain all fields and link correctly
-import { RaidHistoryTable } from "@/app/characters/[realm]/[region]/[characterName]/raid-history-table";
+import { RaidHistoryTable } from "@/app/[region]/[realm]/[characterName]/raid-history-table";
 import type { RaidProgressionSummary } from "@/lib/raiderio/types";
 
 /**
@@ -623,7 +623,7 @@ describe("Property 6: Raid history rows contain all fields and link correctly", 
 
 
 // Feature: character-pages, Property 7: M+ history rows contain all fields and link correctly
-import { MPlusHistoryTable } from "@/app/characters/[realm]/[region]/[characterName]/mplus-history-table";
+import { MPlusHistoryTable } from "@/app/[region]/[realm]/[characterName]/mplus-history-table";
 import type { MythicPlusBestRun } from "@/lib/raiderio/types";
 
 /**
@@ -720,7 +720,7 @@ describe("Property 7: M+ history rows contain all fields and link correctly", ()
 
 
 // Feature: character-pages, Property 8: Graceful degradation on partial API failure
-import { UserInterfacePlaceholder } from "@/app/characters/[realm]/[region]/[characterName]/user-placeholder";
+import { UserInterfacePlaceholder } from "@/app/[region]/[realm]/[characterName]/user-placeholder";
 
 /**
  * Property 8: Graceful degradation on partial API failure

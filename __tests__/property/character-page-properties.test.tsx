@@ -11,17 +11,28 @@ vi.mock("next/navigation", () => ({
 }));
 
 const getCharacterProfileMock = vi.fn();
+const getCharacterMediaMock = vi.fn();
 vi.mock("@/lib/wow-api", () => ({
   WoWApiClient: vi.fn().mockImplementation(() => ({
     getCharacterProfile: getCharacterProfileMock,
+    getCharacterMedia: getCharacterMediaMock,
   })),
 }));
 
-import CharacterPage from "@/app/[realm]/[region]/[character]/page";
+// Mock @/lib/raiderio/client
+vi.mock("@/lib/raiderio/client", () => ({
+  getCharacterProfile: vi.fn().mockResolvedValue(null),
+}));
+
+import CharacterPage from "@/app/[region]/[realm]/[characterName]/page";
 import { WoWApiClient } from "@/lib/wow-api";
 
 beforeEach(() => {
   vi.clearAllMocks();
+  getCharacterMediaMock.mockResolvedValue({
+    ok: true,
+    data: { character: { id: 1, name: "Test" }, assets: [] },
+  });
 });
 
 const arbValidParam = fc.stringMatching(/^[a-z][a-z0-9-]{0,14}$/);
@@ -38,11 +49,11 @@ describe("Property 7: Invalid Character Params Show Not-Found", () => {
 
     await fc.assert(
       fc.asyncProperty(arbValidParam, arbInvalidRegion, arbValidParam,
-        async (realm, region, character) => {
+        async (realm, region, characterName) => {
           notFoundMock.mockClear();
           let threw = false;
           try {
-            await CharacterPage({ params: Promise.resolve({ realm, region, character }) });
+            await CharacterPage({ params: Promise.resolve({ realm, region, characterName }) });
           } catch (e: any) {
             if (e.message === "NEXT_NOT_FOUND") threw = true;
             else throw e;
@@ -55,11 +66,11 @@ describe("Property 7: Invalid Character Params Show Not-Found", () => {
 
   it("calls notFound() for empty realm", async () => {
     await fc.assert(
-      fc.asyncProperty(arbRegion, arbValidParam, async (region, character) => {
+      fc.asyncProperty(arbRegion, arbValidParam, async (region, characterName) => {
         notFoundMock.mockClear();
         let threw = false;
         try {
-          await CharacterPage({ params: Promise.resolve({ realm: "", region, character }) });
+          await CharacterPage({ params: Promise.resolve({ realm: "", region, characterName }) });
         } catch (e: any) {
           if (e.message === "NEXT_NOT_FOUND") threw = true;
           else throw e;
@@ -75,11 +86,11 @@ describe("Property 7: Invalid Character Params Show Not-Found", () => {
 
     await fc.assert(
       fc.asyncProperty(arbSpecialChar, arbRegion, arbValidParam,
-        async (realm, region, character) => {
+        async (realm, region, characterName) => {
           notFoundMock.mockClear();
           let threw = false;
           try {
-            await CharacterPage({ params: Promise.resolve({ realm, region, character }) });
+            await CharacterPage({ params: Promise.resolve({ realm, region, characterName }) });
           } catch (e: any) {
             if (e.message === "NEXT_NOT_FOUND") threw = true;
             else throw e;
@@ -96,10 +107,10 @@ describe("Property 7: Invalid Character Params Show Not-Found", () => {
  * **Validates: Requirements 6.1**
  */
 describe("Property 8: Character Page Passes URL Params to API Client", () => {
-  it("forwards exact realm and character params to getCharacterProfile", async () => {
+  it("forwards exact realm and characterName params to getCharacterProfile", async () => {
     await fc.assert(
       fc.asyncProperty(arbValidParam, arbRegion, arbValidParam,
-        async (realm, region, character) => {
+        async (realm, region, characterName) => {
           getCharacterProfileMock.mockResolvedValue({
             ok: true,
             data: {
@@ -114,10 +125,10 @@ describe("Property 8: Character Page Passes URL Params to API Client", () => {
             },
           });
 
-          const jsx = await CharacterPage({ params: Promise.resolve({ realm, region, character }) });
+          const jsx = await CharacterPage({ params: Promise.resolve({ realm, region, characterName }) });
           const { unmount } = render(jsx);
 
-          expect(getCharacterProfileMock).toHaveBeenCalledWith(realm, character);
+          expect(getCharacterProfileMock).toHaveBeenCalledWith(realm, characterName);
           expect(WoWApiClient).toHaveBeenCalledWith(expect.objectContaining({ region }));
 
           unmount();
@@ -167,7 +178,7 @@ describe("Property 9: Character Page Displays All Required Fields", () => {
         getCharacterProfileMock.mockResolvedValue({ ok: true, data: profile });
 
         const jsx = await CharacterPage({
-          params: Promise.resolve({ realm: "testrealm", region: "us", character: "testchar" }),
+          params: Promise.resolve({ realm: "testrealm", region: "us", characterName: "testchar" }),
         });
         const { container, unmount } = render(jsx);
         const text = container.textContent ?? "";
@@ -201,7 +212,7 @@ describe("Property 10: Character Page Shows Error on API Failure", () => {
         getCharacterProfileMock.mockResolvedValue({ ok: false, error });
 
         const jsx = await CharacterPage({
-          params: Promise.resolve({ realm: "testrealm", region: "us", character: "testchar" }),
+          params: Promise.resolve({ realm: "testrealm", region: "us", characterName: "testchar" }),
         });
         const { container, unmount } = render(jsx);
         const text = container.textContent ?? "";
@@ -229,7 +240,7 @@ describe("Property 10: Character Page Shows Error on API Failure", () => {
           let threw = false;
           try {
             await CharacterPage({
-              params: Promise.resolve({ realm: "testrealm", region: "us", character: "testchar" }),
+              params: Promise.resolve({ realm: "testrealm", region: "us", characterName: "testchar" }),
             });
           } catch (e: any) {
             if (e.message === "NEXT_NOT_FOUND") threw = true;
