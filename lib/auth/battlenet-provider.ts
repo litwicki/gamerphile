@@ -17,7 +17,7 @@ export default function BattleNetProvider(
     checks: ["nonce", "state"],
     authorization: {
       params: {
-        scope: "openid wow.profile",
+        scope: "openid offline_access wow.profile",
       },
     },
     profile(profile) {
