@@ -79,6 +79,7 @@ const mockPlayer: EnrichedRunPlayer = {
   itemLevel: null,
   ranks: null,
   talentLoadoutText: null,
+  thumbnailUrl: null,
   gear: emptyGear,
 };
 
@@ -95,6 +96,7 @@ const mockPlayer2: EnrichedRunPlayer = {
   itemLevel: null,
   ranks: null,
   talentLoadoutText: null,
+  thumbnailUrl: null,
   gear: emptyGear,
 };
 

@@ -62,6 +62,27 @@ function mapRosterMember(p: any) {
   };
 }
 
+async function fetchThumbnail(
+  region: string,
+  realm: string,
+  name: string,
+  apiKey: string | undefined,
+): Promise<string | null> {
+  try {
+    const url = new URL("/api/v1/characters/profile", BASE_URL);
+    url.searchParams.set("region", region);
+    url.searchParams.set("realm", realm);
+    url.searchParams.set("name", name);
+    if (apiKey) url.searchParams.set("access_key", apiKey);
+    const res = await fetch(url.toString(), { next: { revalidate: 300 } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data.thumbnail_url as string) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const season = searchParams.get("season");
@@ -75,11 +96,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const apiKey = process.env.RAIDERIO_API_KEY;
+
     const url = new URL("/api/v1/mythic-plus/run-details", BASE_URL);
     url.searchParams.set("season", season);
     url.searchParams.set("id", id);
-
-    const apiKey = process.env.RAIDERIO_API_KEY;
     if (apiKey) url.searchParams.set("access_key", apiKey);
 
     const res = await fetch(url.toString(), { next: { revalidate: 300 } });
@@ -91,7 +112,24 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await res.json();
-    const roster = (data.roster ?? []).map(mapRosterMember);
+    const rawRoster = (data.roster ?? []).map(mapRosterMember);
+
+    // Fetch thumbnails in parallel for all roster members
+    const thumbnails = await Promise.all(
+      rawRoster.map((p: any) =>
+        fetchThumbnail(
+          p.character.region?.slug ?? "",
+          p.character.realm?.slug ?? "",
+          p.character.name ?? "",
+          apiKey,
+        ),
+      ),
+    );
+
+    const roster = rawRoster.map((p: any, i: number) => ({
+      ...p,
+      thumbnailUrl: thumbnails[i],
+    }));
 
     return NextResponse.json({ roster });
   } catch (e) {

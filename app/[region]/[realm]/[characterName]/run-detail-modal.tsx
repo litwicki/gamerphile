@@ -10,12 +10,19 @@ import type {
   RunGearItem,
 } from "@/lib/raiderio/types";
 import { classColor } from "@/lib/class-colors";
+import { specIconUrl } from "@/lib/spec-icons";
 
 export interface RunDetailModalProps {
   player: EnrichedRunPlayer;
   run: MythicPlusBestRun;
   open: boolean;
   onClose: () => void;
+}
+
+/** Build a spec icon URL via RaiderIO CDN */
+function specBadgeUrl(specName: string): string {
+  const slug = specName.toLowerCase().replace(/\s+/g, "-");
+  return `https://cdnassets.raider.io/images/wow/icons/medium/spec_${slug}.jpg`;
 }
 
 function formatRole(role: string): string {
@@ -33,6 +40,15 @@ function roleIcon(role: string): string {
     case "healer": return "💚";
     case "dps": return "⚔️";
     default: return "👤";
+  }
+}
+
+function upgradeColor(upgrades: number): string {
+  switch (upgrades) {
+    case 3: return "text-green-400";
+    case 2: return "text-yellow-400";
+    case 1: return "text-orange-400";
+    default: return "text-red-400";
   }
 }
 
@@ -107,6 +123,8 @@ export function RunDetailModal({ player, run, open, onClose }: RunDetailModalPro
   const region = player.character.region?.slug ?? "us";
   const realm = player.character.realm?.slug ?? "unknown";
 
+  const specIcon = specIconUrl(characterClass, characterSpec);
+
   const handleCopyTalents = useCallback(async () => {
     const text = player.talentLoadoutText
       ? player.talentLoadoutText
@@ -141,9 +159,21 @@ export function RunDetailModal({ player, run, open, onClose }: RunDetailModalPro
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border px-4 py-3 shrink-0">
-            <Dialog.Title className={`text-sm font-semibold ${classColor(characterClass)}`}>
-              {characterName}
-            </Dialog.Title>
+            <div className="flex items-center gap-2">
+              {/* Spec icon */}
+              {specIcon && (
+                <img
+                  src={specIcon}
+                  alt={`${characterSpec} icon`}
+                  width={20}
+                  height={20}
+                  className="rounded-sm"
+                />
+              )}
+              <Dialog.Title className={`text-sm font-semibold ${classColor(characterClass)}`}>
+                {characterName}
+              </Dialog.Title>
+            </div>
             <Dialog.Close asChild>
               <button
                 aria-label="Close"
@@ -185,12 +215,36 @@ export function RunDetailModal({ player, run, open, onClose }: RunDetailModalPro
             {activeTab === "overview" && (
               <>
                 {/* Identity */}
-                <div className="flex items-center gap-2">
-                  <span className="text-lg" aria-hidden="true">{roleIcon(role)}</span>
+                <div className="flex items-center gap-3">
+                  {/* Character thumbnail */}
+                  {player.thumbnailUrl ? (
+                    <img
+                      src={player.thumbnailUrl}
+                      alt={`${characterName} avatar`}
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 rounded-md border border-border object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-card/60 text-xl" aria-hidden="true">
+                      {roleIcon(role)}
+                    </span>
+                  )}
                   <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {formatRole(role)} — {characterSpec} {characterClass}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      {specIcon && (
+                        <img
+                          src={specIcon}
+                          alt=""
+                          width={14}
+                          height={14}
+                          className="rounded-sm"
+                        />
+                      )}
+                      <p className="text-sm font-medium text-foreground">
+                        {formatRole(role)} — {characterSpec} {characterClass}
+                      </p>
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {realm} ({region.toUpperCase()})
                     </p>
@@ -217,7 +271,7 @@ export function RunDetailModal({ player, run, open, onClose }: RunDetailModalPro
                     </div>
                     <div>
                       <span className="text-muted-foreground">Upgrades</span>
-                      <p className="font-medium text-foreground">
+                      <p className={`font-medium ${upgradeColor(run.num_keystone_upgrades)}`}>
                         {"★".repeat(run.num_keystone_upgrades) || "—"}
                       </p>
                     </div>

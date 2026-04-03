@@ -200,6 +200,7 @@ export interface EnrichedRunPlayer extends MythicPlusBestRunPlayer {
   itemLevel: number | null;
   ranks: { score: number; world: number; region: number; realm: number } | null;
   talentLoadoutText: string | null;
+  thumbnailUrl: string | null;
   gear: RunPlayerGear;
 }
 
