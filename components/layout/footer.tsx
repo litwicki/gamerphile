@@ -45,7 +45,7 @@ export function Footer() {
               Support Gamerphile
             </p>
             <a
-              href="https://patreon.com/gamerphile"
+              href="https://patreon.com/gamerphile_gg?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-primary hover:underline"
