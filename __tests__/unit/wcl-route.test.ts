@@ -29,6 +29,8 @@ function buildRequest(params: Record<string, string> = {}): NextRequest {
 describe("GET /api/wcl/character", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env.WCL_CLIENT_ID = "test-id";
+    process.env.WCL_CLIENT_SECRET = "test-secret";
   });
 
   // ── 400 for missing parameters (Req 14.4) ──

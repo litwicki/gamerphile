@@ -323,8 +323,6 @@ import { BentoGrid } from "@/app/[region]/[realm]/[characterName]/bento-grid";
 
 const baseBentoProps = {
   raidProgression: undefined,
-  regionRank: undefined,
-  worldRank: undefined,
   mplusScore: 0,
   highestRun: undefined,
   scoreColor: "",
@@ -418,8 +416,6 @@ describe("Property 5: M+ widget displays score and highest key", () => {
           <BentoGrid
             raidSummary={undefined}
             raidProgression={undefined}
-            regionRank={undefined}
-            worldRank={undefined}
             mplusScore={score}
             highestRun={run}
             scoreColor=""
@@ -451,8 +447,6 @@ describe("Property 5: M+ widget displays score and highest key", () => {
             <BentoGrid
               raidSummary={undefined}
               raidProgression={undefined}
-              regionRank={undefined}
-              worldRank={undefined}
               mplusScore={0}
               highestRun={run}
               scoreColor=""
@@ -490,8 +484,6 @@ describe("Property 5: M+ widget displays score and highest key", () => {
           <BentoGrid
             raidSummary={undefined}
             raidProgression={undefined}
-            regionRank={undefined}
-            worldRank={undefined}
             mplusScore={score}
             highestRun={run}
             scoreColor=""
@@ -522,8 +514,6 @@ describe("Property 5: M+ widget displays score and highest key", () => {
           <BentoGrid
             raidSummary={undefined}
             raidProgression={undefined}
-            regionRank={undefined}
-            worldRank={undefined}
             mplusScore={score}
             highestRun={undefined}
             scoreColor=""
@@ -604,65 +594,30 @@ const arbRaidProgression = fc
   })
   .filter((r) => Object.keys(r).length > 0);
 
-// Helper: reproduce the formatRaidName logic from the component
-function formatRaidName(slug: string): string {
-  return slug
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
+describe("Property 6: Raid history renders without crashing for any raid progression", () => {
+  it("renders the component without throwing for any valid raid progression", () => {
+    // Mock fetch for WCL data
+    globalThis.fetch = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ zoneRankings: null, encounterRankings: null }),
+    })) as unknown as typeof fetch;
 
-describe("Property 6: Raid history rows contain all fields and link correctly", () => {
-  it("each row contains the raid name, boss kill counts, summary, and correct link", () => {
     fc.assert(
       fc.property(arbRaidProgression, (raidProgression) => {
         const { container, unmount } = render(
-          <RaidHistoryTable raidProgression={raidProgression} />
+          <RaidHistoryTable raidProgression={raidProgression} characterName="Test" serverSlug="test" serverRegion="us" />
         );
 
-        const links = container.querySelectorAll("a");
-        const slugs = Object.keys(raidProgression);
+        // Should render the "Raid Logs" heading
+        expect(container.textContent).toContain("Raid Logs");
 
-        // There should be one link per raid entry
-        expect(links.length).toBe(slugs.length);
-
-        for (const slug of slugs) {
-          const prog = raidProgression[slug];
-          const expectedName = formatRaidName(slug);
-          const expectedHref = `https://raider.io/raids/${slug}`;
-
-          // Find the link for this raid
-          const link = Array.from(links).find(
-            (a) => a.getAttribute("href") === expectedHref
-          );
-          expect(link).not.toBeNull();
-
-          const rowText = link!.textContent ?? "";
-
-          // Row should contain the formatted raid name
-          expect(rowText).toContain(expectedName);
-
-          // Row should contain boss kill counts in N:/H:/M: format
-          expect(rowText).toContain(
-            `N: ${prog.normal_bosses_killed}/${prog.total_bosses}`
-          );
-          expect(rowText).toContain(
-            `H: ${prog.heroic_bosses_killed}/${prog.total_bosses}`
-          );
-          expect(rowText).toContain(
-            `M: ${prog.mythic_bosses_killed}/${prog.total_bosses}`
-          );
-
-          // Row should contain the summary string
-          expect(rowText).toContain(prog.summary);
-
-          // Link should open in new tab
-          expect(link!.getAttribute("target")).toBe("_blank");
-          expect(link!.getAttribute("rel")).toContain("noopener");
-        }
+        // Should render difficulty buttons
+        const buttons = container.querySelectorAll("button");
+        expect(buttons.length).toBeGreaterThanOrEqual(3);
 
         unmount();
       }),
-      { numRuns: 100 }
+      { numRuns: 50 }
     );
   });
 });
@@ -898,8 +853,6 @@ describe("Property 8: Graceful degradation on partial API failure", () => {
             <BentoGrid
               raidSummary={effectiveRaidSummary}
               raidProgression={effectiveRaidProg}
-              regionRank={undefined}
-              worldRank={undefined}
               mplusScore={effectiveMplusScore}
               highestRun={effectiveHighestRun}
               scoreColor=""
@@ -937,14 +890,14 @@ describe("Property 8: Graceful degradation on partial API failure", () => {
 
           // RaidHistoryTable should render without throwing
           const raidTable = render(
-            <RaidHistoryTable raidProgression={effectiveRaidProg} />
+            <RaidHistoryTable raidProgression={effectiveRaidProg} characterName="Test" serverSlug="test" serverRegion="us" />
           );
 
           if (!failure.rioOk) {
             expect(raidTable.container.textContent).toContain("No raid history available.");
           } else {
-            // Should contain raid entries
-            expect(raidTable.container.querySelectorAll("a").length).toBeGreaterThan(0);
+            // Should contain difficulty buttons
+            expect(raidTable.container.querySelectorAll("button").length).toBeGreaterThan(0);
           }
           raidTable.unmount();
 

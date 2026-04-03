@@ -17,8 +17,6 @@ import { resolveScoreColor, resolveParseColor } from "@/lib/raiderio/score-color
 export interface RaidProgressWidgetProps {
   raidSummary: string | undefined;
   raidProgression: Record<string, RaidProgressionSummary | RaidProgressionDetail> | undefined;
-  regionRank: number | undefined;
-  worldRank: number | undefined;
 }
 
 export interface MPlusRatingWidgetProps {
@@ -39,8 +37,6 @@ export interface WarcraftLogsWidgetProps {
 export interface BentoGridProps {
   raidSummary: string | undefined;
   raidProgression: Record<string, RaidProgressionSummary | RaidProgressionDetail> | undefined;
-  regionRank: number | undefined;
-  worldRank: number | undefined;
   mplusScore: number;
   highestRun: { dungeon: string; level: number } | undefined;
   scoreColor: string;
@@ -58,14 +54,6 @@ const widgetCard =
 
 type Difficulty = "normal" | "heroic" | "mythic";
 
-function getFirstRaidDetail(
-  progression: Record<string, RaidProgressionSummary | RaidProgressionDetail> | undefined
-): RaidProgressionDetail | undefined {
-  if (!progression) return undefined;
-  const first = Object.values(progression)[0];
-  return first as RaidProgressionDetail | undefined;
-}
-
 function getKillCount(detail: RaidProgressionDetail | undefined, diff: Difficulty): number {
   if (!detail) return 0;
   if (diff === "normal") return detail.normal_bosses_killed;
@@ -80,11 +68,10 @@ function getBossList(detail: RaidProgressionDetail | undefined, diff: Difficulty
 export function RaidProgressWidget({
   raidSummary,
   raidProgression,
-  regionRank,
-  worldRank,
 }: RaidProgressWidgetProps) {
-  const [expanded, setExpanded] = useState(false);
-  const detail = getFirstRaidDetail(raidProgression);
+  const raidSlugs = raidProgression ? Object.keys(raidProgression) : [];
+  const [selectedRaid, setSelectedRaid] = useState(raidSlugs[0] ?? "");
+  const detail = raidProgression?.[selectedRaid] as RaidProgressionDetail | undefined;
 
   const difficulties: Difficulty[] = ["normal", "heroic", "mythic"];
   const killCounts: Record<Difficulty, number> = {
@@ -93,92 +80,126 @@ export function RaidProgressWidget({
     mythic: getKillCount(detail, "mythic"),
   };
 
-  // Default to the highest difficulty that has kills, or "normal"
-  const defaultTab =
+  // Default to highest difficulty with kills
+  const defaultDiff =
     difficulties.filter((d) => killCounts[d] > 0).pop() ?? "normal";
+  const [activeDiff, setActiveDiff] = useState<Difficulty>(defaultDiff);
+
+  // Reset difficulty when raid changes
+  useEffect(() => {
+    const d = raidProgression?.[selectedRaid] as RaidProgressionDetail | undefined;
+    const counts: Record<Difficulty, number> = {
+      normal: getKillCount(d, "normal"),
+      heroic: getKillCount(d, "heroic"),
+      mythic: getKillCount(d, "mythic"),
+    };
+    const best = difficulties.filter((diff) => counts[diff] > 0).pop() ?? "normal";
+    setActiveDiff(best);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRaid, raidProgression]);
+
+  const bosses = getBossList(detail, activeDiff);
+  const total = detail?.total_bosses ?? 0;
+  const killed = killCounts[activeDiff];
+
+  const diffLabel: Record<Difficulty, string> = { normal: "N", heroic: "H", mythic: "M" };
 
   return (
     <div className={widgetCard}>
-      <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground/60">
-        Raid Progress
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground/60">
+          Raid Progress
+        </h3>
+        {raidSlugs.length > 1 && (
+          <select
+            value={selectedRaid}
+            onChange={(e) => setSelectedRaid(e.target.value)}
+            className="rounded bg-card border border-border px-1.5 py-0.5 text-[10px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            {raidSlugs.map((slug) => (
+              <option key={slug} value={slug}>
+                {formatRaidSlug(slug)}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
       <p className="mt-1 text-2xl font-bold text-foreground">
         {raidSummary ?? "—"}
       </p>
 
-      <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
-        <span>
-          Region: <span className="font-semibold text-foreground">{regionRank != null ? `#${regionRank}` : "—"}</span>
-        </span>
-        <span>
-          World: <span className="font-semibold text-foreground">{worldRank != null ? `#${worldRank}` : "—"}</span>
-        </span>
+      {/* Difficulty buttons */}
+      <div className="mt-2 flex gap-1">
+        {difficulties.map((diff) => {
+          const disabled = killCounts[diff] === 0 && !detail?.bosses?.[diff]?.length;
+          const active = activeDiff === diff;
+          return (
+            <button
+              key={diff}
+              type="button"
+              disabled={disabled}
+              onClick={() => setActiveDiff(diff)}
+              className={`rounded px-2.5 py-1 text-xs font-semibold transition-colors ${
+                active
+                  ? "bg-primary text-primary-foreground"
+                  : disabled
+                    ? "bg-card/40 text-muted-foreground/30 cursor-not-allowed"
+                    : "bg-card/40 text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer"
+              }`}
+            >
+              {diffLabel[diff]}
+            </button>
+          );
+        })}
       </div>
 
-      {detail?.bosses && (
-        <>
-          <button
-            type="button"
-            onClick={() => setExpanded((prev) => !prev)}
-            className="mt-2 text-xs font-medium text-primary hover:underline"
-          >
-            {expanded ? "See Less" : "See More"}
-          </button>
+      {/* Progress bar */}
+      {total > 0 && (
+        <div className="mt-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+            <span className="capitalize">{activeDiff}</span>
+            <span className="font-mono font-semibold text-foreground">{killed}/{total}</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-border overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${total > 0 ? (killed / total) * 100 : 0}%` }}
+            />
+          </div>
+        </div>
+      )}
 
-          {expanded && (
-            <Tabs.Root defaultValue={defaultTab} className="mt-3">
-              <Tabs.List className="flex gap-1 border-b border-border pb-1">
-                {difficulties.map((diff) => {
-                  const disabled = killCounts[diff] === 0;
-                  return (
-                    <Tabs.Trigger
-                      key={diff}
-                      value={diff}
-                      disabled={disabled}
-                      className="rounded-t px-2 py-1 text-xs font-medium capitalize transition-colors data-[state=active]:bg-accent data-[state=active]:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      {diff}
-                    </Tabs.Trigger>
-                  );
-                })}
-              </Tabs.List>
-
-              {difficulties.map((diff) => {
-                const bosses = getBossList(detail, diff);
-                return (
-                  <Tabs.Content key={diff} value={diff} className="mt-2 space-y-1">
-                    {bosses.length > 0 ? (
-                      bosses.map((boss) => (
-                        <div
-                          key={boss.slug}
-                          className="flex items-center justify-between text-xs"
-                        >
-                          <span className="text-foreground">{boss.name}</span>
-                          {boss.defeatedAt ? (
-                            <span className="text-green-500" aria-label="Killed">✓</span>
-                          ) : (
-                            <span className="text-muted-foreground/40" aria-label="Not killed">✗</span>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-xs text-muted-foreground">No kills</p>
-                    )}
-                  </Tabs.Content>
-                );
-              })}
-            </Tabs.Root>
-          )}
-        </>
+      {/* Boss list */}
+      {bosses.length > 0 && (
+        <div className="mt-2 space-y-0.5">
+          {bosses.map((boss) => (
+            <div
+              key={boss.slug}
+              className="flex items-center justify-between text-xs"
+            >
+              <span className="text-foreground">{boss.name}</span>
+              {boss.defeatedAt ? (
+                <span className="text-green-500" aria-label="Killed">✓</span>
+              ) : (
+                <span className="text-muted-foreground/40" aria-label="Not killed">✗</span>
+              )}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
 }
 
+function formatRaidSlug(slug: string): string {
+  return slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function WarcraftLogsWidget({ characterName, serverSlug, serverRegion }: WarcraftLogsWidgetProps) {
   const [data, setData] = useState<WCLCharacterResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<"none" | "unconfigured" | "failed">("none");
 
   useEffect(() => {
     if (!characterName || !serverSlug || !serverRegion) {
@@ -196,14 +217,21 @@ function WarcraftLogsWidget({ characterName, serverSlug, serverRegion }: Warcraf
           serverRegion,
         });
         const res = await fetch(`/api/wcl/character?${params.toString()}`);
-        if (!res.ok) throw new Error("fetch failed");
+        if (!res.ok) {
+          // 503 = credentials not configured
+          if (res.status === 503) {
+            if (!cancelled) setError("unconfigured");
+            return;
+          }
+          throw new Error("fetch failed");
+        }
         const json: WCLCharacterResponse = await res.json();
         if (!cancelled) {
           setData(json);
         }
       } catch {
         if (!cancelled) {
-          setError(true);
+          setError("failed");
         }
       } finally {
         if (!cancelled) {
@@ -216,14 +244,18 @@ function WarcraftLogsWidget({ characterName, serverSlug, serverRegion }: Warcraf
     return () => { cancelled = true; };
   }, [characterName, serverSlug, serverRegion]);
 
-  // Error state — fall back to "Coming Soon" without exposing details
-  if (error) {
+  // Error state
+  if (error !== "none") {
     return (
       <div className={widgetCard} data-testid="wcl-widget">
         <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground/60">
           Warcraft Logs
         </h3>
-        <p className="mt-1 text-sm text-muted-foreground">Coming Soon</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {error === "unconfigured"
+            ? "WCL API not configured"
+            : "Coming Soon"}
+        </p>
       </div>
     );
   }
@@ -437,8 +469,6 @@ function TwitchWidget() {
 export function BentoGrid({
   raidSummary,
   raidProgression,
-  regionRank,
-  worldRank,
   mplusScore,
   highestRun,
   scoreColor,
@@ -459,8 +489,6 @@ export function BentoGrid({
       <RaidProgressWidget
         raidSummary={raidSummary}
         raidProgression={raidProgression}
-        regionRank={regionRank}
-        worldRank={worldRank}
       />
       <WarcraftLogsWidget
         characterName={characterName}

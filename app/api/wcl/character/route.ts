@@ -20,12 +20,22 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  if (!process.env.WCL_CLIENT_ID || !process.env.WCL_CLIENT_SECRET) {
+    return NextResponse.json(
+      { error: "WCL API credentials not configured" },
+      { status: 503 }
+    );
+  }
+
   try {
     const client = new WCLClient();
+    const difficulty = searchParams.get("difficulty")
+      ? Number(searchParams.get("difficulty"))
+      : undefined;
 
     const [zoneRankings, encounterRankings] = await Promise.all([
-      client.getCharacterZoneRankings(name, serverSlug, serverRegion),
-      client.getCharacterEncounterRankings(name, serverSlug, serverRegion),
+      client.getCharacterZoneRankings(name, serverSlug, serverRegion, undefined, difficulty),
+      client.getCharacterEncounterRankings(name, serverSlug, serverRegion, undefined, difficulty),
     ]);
 
     return NextResponse.json({ zoneRankings, encounterRankings });

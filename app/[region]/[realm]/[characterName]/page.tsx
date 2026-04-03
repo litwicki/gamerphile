@@ -230,8 +230,6 @@ export default async function CharacterDetailPage({ params }: Props) {
       <BentoGrid
         raidSummary={raidSummary}
         raidProgression={raidProg}
-        regionRank={undefined}
-        worldRank={undefined}
         mplusScore={mplusScore}
         highestRun={
           highestRun
@@ -250,7 +248,12 @@ export default async function CharacterDetailPage({ params }: Props) {
 
       <div className="mx-auto mt-8 w-full max-w-[var(--max-viewport)] px-4 sm:px-6">
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          <RaidHistoryTable raidProgression={raidProg} />
+          <RaidHistoryTable
+            raidProgression={raidProg}
+            characterName={characterName}
+            serverSlug={realm}
+            serverRegion={region}
+          />
           <MPlusHistoryTable bestRuns={bestRuns} scoreTiers={scoreTiers} />
           <UserInterfacePlaceholder />
         </div>
