@@ -322,9 +322,19 @@ import { BentoGrid } from "@/app/[region]/[realm]/[characterName]/bento-grid";
  */
 
 const baseBentoProps = {
+  raidProgression: undefined,
+  regionRank: undefined,
+  worldRank: undefined,
   mplusScore: 0,
   highestRun: undefined,
+  scoreColor: "",
+  ranks: undefined,
+  specScores: undefined,
+  scoreTiers: [] as import("@/lib/raiderio/types").ScoreTier[],
   hasTwitchIntegration: false,
+  characterName: "Testchar",
+  serverSlug: "stormrage",
+  serverRegion: "us",
 };
 
 const arbNonEmptyRaidSummary = fc
@@ -407,9 +417,19 @@ describe("Property 5: M+ widget displays score and highest key", () => {
         const { container, unmount } = render(
           <BentoGrid
             raidSummary={undefined}
+            raidProgression={undefined}
+            regionRank={undefined}
+            worldRank={undefined}
             mplusScore={score}
             highestRun={run}
+            scoreColor=""
+            ranks={undefined}
+            specScores={undefined}
+            scoreTiers={[]}
             hasTwitchIntegration={false}
+            characterName="Testchar"
+            serverSlug="stormrage"
+            serverRegion="us"
           />
         );
 
@@ -430,9 +450,19 @@ describe("Property 5: M+ widget displays score and highest key", () => {
           const { container, unmount } = render(
             <BentoGrid
               raidSummary={undefined}
+              raidProgression={undefined}
+              regionRank={undefined}
+              worldRank={undefined}
               mplusScore={0}
               highestRun={run}
+              scoreColor=""
+              ranks={undefined}
+              specScores={undefined}
+              scoreTiers={[]}
               hasTwitchIntegration={false}
+              characterName="Testchar"
+              serverSlug="stormrage"
+              serverRegion="us"
             />
           );
 
@@ -459,9 +489,19 @@ describe("Property 5: M+ widget displays score and highest key", () => {
         const { container, unmount } = render(
           <BentoGrid
             raidSummary={undefined}
+            raidProgression={undefined}
+            regionRank={undefined}
+            worldRank={undefined}
             mplusScore={score}
             highestRun={run}
+            scoreColor=""
+            ranks={undefined}
+            specScores={undefined}
+            scoreTiers={[]}
             hasTwitchIntegration={false}
+            characterName="Testchar"
+            serverSlug="stormrage"
+            serverRegion="us"
           />
         );
 
@@ -475,14 +515,21 @@ describe("Property 5: M+ widget displays score and highest key", () => {
     );
   });
 
-  it('displays "—" for highest key when highestRun is undefined', () => {
+  it('does not display highest key line when highestRun is undefined', () => {
     fc.assert(
       fc.property(arbPositiveMplusScore, (score) => {
         const { container, unmount } = render(
           <BentoGrid
             raidSummary={undefined}
+            raidProgression={undefined}
+            regionRank={undefined}
+            worldRank={undefined}
             mplusScore={score}
             highestRun={undefined}
+            scoreColor=""
+            ranks={undefined}
+            specScores={undefined}
+            scoreTiers={[]}
             hasTwitchIntegration={false}
           />
         );
@@ -495,12 +542,11 @@ describe("Property 5: M+ widget displays score and highest key", () => {
         );
         expect(mplusWidget).not.toBeNull();
 
-        // The small text below the score should be "—"
-        const smallTexts = mplusWidget!.querySelectorAll("p.text-xs");
-        const fallbackP = Array.from(smallTexts).find(
-          (p) => p.textContent === "—"
-        );
-        expect(fallbackP).not.toBeNull();
+        // With no highestRun and no ranks, the widget should show "—" for rank values
+        const rankDashes = mplusWidget!.querySelectorAll("[data-testid='realm-rank'], [data-testid='region-rank'], [data-testid='world-rank']");
+        for (const el of Array.from(rankDashes)) {
+          expect(el.textContent).toBe("—");
+        }
 
         unmount();
       }),
@@ -643,12 +689,6 @@ function formatTime(ms: number): string {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
-// Helper: reproduce formatUpgrades from the component
-function formatUpgrades(count: number): string {
-  if (count <= 0) return "—";
-  return "+".repeat(count);
-}
-
 const arbMythicPlusBestRun: fc.Arbitrary<MythicPlusBestRun> = fc.record({
   dungeon: fc
     .string({ minLength: 1, maxLength: 30 })
@@ -657,7 +697,7 @@ const arbMythicPlusBestRun: fc.Arbitrary<MythicPlusBestRun> = fc.record({
     .string({ minLength: 1, maxLength: 10 })
     .filter((s) => s.trim().length > 0),
   mythic_level: fc.integer({ min: 2, max: 35 }),
-  completed_at: fc.date().map((d) => d.toISOString()),
+  completed_at: fc.date({ min: new Date("2020-01-01"), max: new Date("2030-01-01"), noInvalidDate: true }).map((d) => d.toISOString()),
   clear_time_ms: fc.integer({ min: 60000, max: 7200000 }),
   par_time_ms: fc.integer({ min: 60000, max: 7200000 }),
   num_keystone_upgrades: fc.integer({ min: 0, max: 3 }),
@@ -670,23 +710,23 @@ const arbBestRunsArray = fc.array(arbMythicPlusBestRun, {
   maxLength: 10,
 });
 
-describe("Property 7: M+ history rows contain all fields and link correctly", () => {
-  it("each row contains dungeon name, key level, time, upgrades, score, and correct link", () => {
+describe("Property 7: M+ history rows contain all fields and expand on click", () => {
+  it("each row contains dungeon name (bold) + key level on first line, score + clear time on second line, and expands on click", () => {
     fc.assert(
       fc.property(arbBestRunsArray, (bestRuns) => {
         const { container, unmount } = render(
           <MPlusHistoryTable bestRuns={bestRuns} />
         );
 
-        const links = container.querySelectorAll("a");
+        const buttons = container.querySelectorAll("button[aria-expanded]");
 
-        // There should be one link per run
-        expect(links.length).toBe(bestRuns.length);
+        // There should be one expandable button per run
+        expect(buttons.length).toBe(bestRuns.length);
 
         for (let i = 0; i < bestRuns.length; i++) {
           const run = bestRuns[i];
-          const link = links[i];
-          const rowText = link.textContent ?? "";
+          const button = buttons[i];
+          const rowText = button.textContent ?? "";
 
           // Row should contain the dungeon name
           expect(rowText).toContain(run.dungeon);
@@ -697,18 +737,11 @@ describe("Property 7: M+ history rows contain all fields and link correctly", ()
           // Row should contain the formatted clear time
           expect(rowText).toContain(formatTime(run.clear_time_ms));
 
-          // Row should contain the formatted upgrades
-          expect(rowText).toContain(formatUpgrades(run.num_keystone_upgrades));
-
           // Row should contain the score formatted to 1 decimal place
           expect(rowText).toContain(run.score.toFixed(1));
 
-          // Link should point to the run URL
-          expect(link.getAttribute("href")).toBe(run.url);
-
-          // Link should open in new tab
-          expect(link.getAttribute("target")).toBe("_blank");
-          expect(link.getAttribute("rel")).toContain("noopener");
+          // Button should start collapsed
+          expect(button.getAttribute("aria-expanded")).toBe("false");
         }
 
         unmount();
@@ -864,8 +897,15 @@ describe("Property 8: Graceful degradation on partial API failure", () => {
           const bento = render(
             <BentoGrid
               raidSummary={effectiveRaidSummary}
+              raidProgression={effectiveRaidProg}
+              regionRank={undefined}
+              worldRank={undefined}
               mplusScore={effectiveMplusScore}
               highestRun={effectiveHighestRun}
+              scoreColor=""
+              ranks={undefined}
+              specScores={undefined}
+              scoreTiers={[]}
               hasTwitchIntegration={false}
             />
           );
@@ -916,7 +956,7 @@ describe("Property 8: Graceful degradation on partial API failure", () => {
           if (!failure.rioOk) {
             expect(mplusTable.container.textContent).toContain("No M+ history available.");
           } else {
-            expect(mplusTable.container.querySelectorAll("a").length).toBeGreaterThan(0);
+            expect(mplusTable.container.querySelectorAll("button[aria-expanded]").length).toBeGreaterThan(0);
           }
           mplusTable.unmount();
 

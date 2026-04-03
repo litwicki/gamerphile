@@ -52,9 +52,19 @@ describe("BentoGrid", () => {
     const { container } = render(
       <BentoGrid
         raidSummary="6/8 H"
+        raidProgression={undefined}
+        regionRank={undefined}
+        worldRank={undefined}
         mplusScore={2500}
         highestRun={{ dungeon: "Ara-Kara", level: 12 }}
+        scoreColor=""
+        ranks={undefined}
+        specScores={undefined}
+        scoreTiers={[]}
         hasTwitchIntegration={false}
+        characterName="Testchar"
+        serverSlug="stormrage"
+        serverRegion="us"
       />,
     );
     // Raid Progress, Warcraft Logs, M+ Rating — no Twitch
@@ -66,16 +76,26 @@ describe("BentoGrid", () => {
     expect(container.firstElementChild?.className).toContain("lg:grid-cols-3");
   });
 
-  it("WarcraftLogs widget shows 'Coming Soon' (Req 2.4)", () => {
+  it("WarcraftLogs widget shows 'Loading…' initially (Req 2.4)", () => {
     render(
       <BentoGrid
         raidSummary={undefined}
+        raidProgression={undefined}
+        regionRank={undefined}
+        worldRank={undefined}
         mplusScore={0}
         highestRun={undefined}
+        scoreColor=""
+        ranks={undefined}
+        specScores={undefined}
+        scoreTiers={[]}
         hasTwitchIntegration={false}
+        characterName="Testchar"
+        serverSlug="stormrage"
+        serverRegion="us"
       />,
     );
-    expect(screen.getByText("Coming Soon")).toBeInTheDocument();
+    expect(screen.getByText("Loading…")).toBeInTheDocument();
   });
 });
 

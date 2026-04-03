@@ -24,7 +24,7 @@ export function HeroSection({
   classColor,
 }: HeroSectionProps) {
   return (
-    <div className="relative h-[40vh] overflow-hidden">
+    <div className="relative h-[50vh] md:h-[40vh] overflow-hidden">
       {/* Background: parallax image or gradient fallback */}
       {mainRawUrl ? (
         <div
@@ -41,8 +41,11 @@ export function HeroSection({
         <div className="absolute inset-0 bg-gradient-to-br from-primary/60 to-background" />
       )}
 
-      {/* Dark gradient scrim for readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+      {/* Desktop gradient scrim */}
+      <div className="absolute inset-0 hidden md:block bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+      {/* Mobile gradient scrim – stronger at the lower portion for text readability */}
+      <div className="absolute inset-0 md:hidden bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
       {/* Character identity overlay */}
       <div className="absolute bottom-0 left-0 right-0 p-6">

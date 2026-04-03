@@ -20,6 +20,18 @@ vi.mock("next/navigation", () => ({
 import { useSession } from "next-auth/react";
 import { AvatarMenu, MENU_ITEMS } from "@/components/layout/avatar-menu";
 import { ThemeProvider } from "@/components/theme-provider";
+import { UltrawideProvider } from "@/components/ultrawide-provider";
+import { RegionProvider } from "@/components/region-provider";
+
+function AllProviders({ children }: { children: React.ReactNode }) {
+  return (
+    <ThemeProvider>
+      <RegionProvider>
+        <UltrawideProvider>{children}</UltrawideProvider>
+      </RegionProvider>
+    </ThemeProvider>
+  );
+}
 
 // ─── Helpers ───
 
@@ -82,20 +94,22 @@ describe("AvatarMenu", () => {
     it("displays Guilds, Characters, Interface in order when trigger is clicked", async () => {
       mockAuthenticated();
       const user = userEvent.setup();
-      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
+      render(<AllProviders><AvatarMenu /></AllProviders>);
 
       const trigger = screen.getByLabelText("User menu");
       await user.click(trigger);
 
       await waitFor(() => {
         const items = screen.getAllByRole("menuitem");
-        // 3 nav items + Theme sub-trigger + Sign out = 5
-        expect(items).toHaveLength(5);
+        // 3 nav items + Theme sub-trigger + Region sub-trigger + Ultrawide + Sign out = 7
+        expect(items).toHaveLength(7);
         expect(items[0]).toHaveTextContent("Guilds");
         expect(items[1]).toHaveTextContent("Characters");
         expect(items[2]).toHaveTextContent("Interface");
         expect(items[3]).toHaveTextContent("Theme");
-        expect(items[4]).toHaveTextContent("Sign out");
+        expect(items[4]).toHaveTextContent("Region");
+        expect(items[5]).toHaveTextContent("Ultrawide");
+        expect(items[6]).toHaveTextContent("Sign out");
       });
     });
   });
@@ -104,14 +118,14 @@ describe("AvatarMenu", () => {
     it("removes menu content from DOM when Escape is pressed", async () => {
       mockAuthenticated();
       const user = userEvent.setup();
-      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
+      render(<AllProviders><AvatarMenu /></AllProviders>);
 
       const trigger = screen.getByLabelText("User menu");
       await user.click(trigger);
 
       // Menu should be open
       await waitFor(() => {
-        expect(screen.getAllByRole("menuitem")).toHaveLength(5);
+        expect(screen.getAllByRole("menuitem")).toHaveLength(7);
       });
 
       // Press Escape
@@ -126,7 +140,7 @@ describe("AvatarMenu", () => {
   describe("ARIA roles (Req 5.1, 5.2)", () => {
     it('trigger has aria-label="User menu"', () => {
       mockAuthenticated();
-      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
+      render(<AllProviders><AvatarMenu /></AllProviders>);
 
       const trigger = screen.getByLabelText("User menu");
       expect(trigger).toBeInTheDocument();
@@ -136,7 +150,7 @@ describe("AvatarMenu", () => {
     it('menu has role="menu" when open', async () => {
       mockAuthenticated();
       const user = userEvent.setup();
-      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
+      render(<AllProviders><AvatarMenu /></AllProviders>);
 
       const trigger = screen.getByLabelText("User menu");
       await user.click(trigger);
@@ -150,14 +164,14 @@ describe("AvatarMenu", () => {
     it('items have role="menuitem"', async () => {
       mockAuthenticated();
       const user = userEvent.setup();
-      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
+      render(<AllProviders><AvatarMenu /></AllProviders>);
 
       const trigger = screen.getByLabelText("User menu");
       await user.click(trigger);
 
       await waitFor(() => {
         const items = screen.getAllByRole("menuitem");
-        expect(items).toHaveLength(MENU_ITEMS.length + 2); // +1 for Theme sub-trigger, +1 for Sign out
+        expect(items).toHaveLength(MENU_ITEMS.length + 4); // +1 Theme sub-trigger, +1 Region sub-trigger, +1 Ultrawide, +1 Sign out
         for (const item of items) {
           expect(item).toHaveAttribute("role", "menuitem");
         }
@@ -169,7 +183,7 @@ describe("AvatarMenu", () => {
     it("trigger button can receive focus via Tab", async () => {
       mockAuthenticated();
       const user = userEvent.setup();
-      render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
+      render(<AllProviders><AvatarMenu /></AllProviders>);
 
       // Tab into the trigger
       await user.tab();
@@ -194,7 +208,7 @@ describe("AppBar auth states", () => {
         update: vi.fn(),
       });
 
-      render(<AppBar />);
+      render(<AllProviders><AppBar /></AllProviders>);
 
       // Skeleton should be present
       const skeleton = document.querySelector(".animate-pulse");
@@ -216,12 +230,12 @@ describe("AppBar auth states", () => {
         update: vi.fn(),
       });
 
-      render(<AppBar />);
+      render(<AllProviders><AppBar /></AllProviders>);
 
-      // Sign-in link should be present
-      const signInLink = screen.getByText("Sign in");
-      expect(signInLink).toBeInTheDocument();
-      expect(signInLink.closest("a")).toHaveAttribute("href", "/signin");
+      // Sign-in link should be present (desktop + mobile)
+      const signInLinks = screen.getAllByText("Sign in");
+      expect(signInLinks.length).toBeGreaterThan(0);
+      expect(signInLinks[0].closest("a")).toHaveAttribute("href", "/signin");
 
       // Avatar trigger should be absent
       expect(screen.queryByLabelText("User menu")).toBeNull();
@@ -235,11 +249,11 @@ describe("AppBar auth states", () => {
     it("renders AvatarMenu with user menu trigger", () => {
       mockAuthenticated();
 
-      render(<AppBar />);
+      render(<AllProviders><AppBar /></AllProviders>);
 
-      // Avatar trigger should be present
-      const trigger = screen.getByLabelText("User menu");
-      expect(trigger).toBeInTheDocument();
+      // Avatar trigger should be present (desktop + mobile)
+      const triggers = screen.getAllByLabelText("User menu");
+      expect(triggers.length).toBeGreaterThan(0);
 
       // Sign-in link should be absent
       expect(screen.queryByText("Sign in")).toBeNull();

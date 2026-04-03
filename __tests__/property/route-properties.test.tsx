@@ -62,8 +62,34 @@ vi.mock("@/lib/raiderio/client", () => ({
 
 import CharacterPage from "@/app/[region]/[realm]/[characterName]/page";
 import HomePage from "@/app/page";
-import NewsPage from "@/app/news/page";
 import UIShowcasePage from "@/app/ui/page";
+import { RegionProvider } from "@/components/region-provider";
+
+// Mock supabase server client for NewsPage
+vi.mock("@/lib/supabase/server", () => {
+  const createChain = (result: { data: unknown; count?: number }) => {
+    const chain: Record<string, unknown> = {
+      ...result,
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      range: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+    };
+    (chain.select as ReturnType<typeof vi.fn>).mockReturnValue(chain);
+    (chain.order as ReturnType<typeof vi.fn>).mockReturnValue(chain);
+    (chain.range as ReturnType<typeof vi.fn>).mockReturnValue(chain);
+    (chain.eq as ReturnType<typeof vi.fn>).mockReturnValue(chain);
+    return chain;
+  };
+
+  return {
+    createClient: vi.fn().mockResolvedValue({
+      from: vi.fn().mockImplementation(() => createChain({ data: [], count: 0 })),
+    }),
+  };
+});
+
+import NewsPage from "@/app/news/page";
 
 // ── Arbitraries ──
 
@@ -96,14 +122,16 @@ describe("Property 5: Dynamic Route Renders Character Page", () => {
 
 describe("Property 6: Public Routes Accessible Without Auth", () => {
   it("Home page renders without auth", () => {
-    const { unmount } = render(<HomePage />);
-    expect(screen.getByText("Blue Tracker")).toBeInTheDocument();
+    const { unmount } = render(<RegionProvider><HomePage /></RegionProvider>);
+    expect(screen.getAllByText("Blue Tracker").length).toBeGreaterThanOrEqual(1);
     unmount();
   });
 
-  it("News page renders without auth", () => {
-    const { unmount } = render(<NewsPage />);
-    expect(screen.getByText("News")).toBeInTheDocument();
+  it("News page renders without auth", async () => {
+    const searchParams = Promise.resolve({});
+    const jsx = await NewsPage({ searchParams });
+    const { unmount } = render(jsx);
+    expect(screen.getByText("WoW News")).toBeInTheDocument();
     unmount();
   });
 

@@ -152,6 +152,57 @@ export interface RaidProgressionSummary {
   mythic_bosses_killed: number;
 }
 
+export interface MythicPlusBestRunPlayer {
+  character: {
+    id: number;
+    name: string;
+    realm: { slug: string };
+    region: { slug: string };
+    class: { name: string; slug: string };
+    spec?: { name: string; slug: string };
+  };
+  role: string;
+}
+
+// ── Enriched roster data from run-details endpoint ──
+
+export interface RunGearItem {
+  item_id: number;
+  item_level: number;
+  name: string;
+  icon: string;
+  item_quality: number;
+  tier: string | null;
+  enchants_detail: { name: string }[];
+  gems_detail: { name: string }[];
+}
+
+export interface RunPlayerGear {
+  head: RunGearItem | null;
+  neck: RunGearItem | null;
+  shoulder: RunGearItem | null;
+  back: RunGearItem | null;
+  chest: RunGearItem | null;
+  waist: RunGearItem | null;
+  wrist: RunGearItem | null;
+  hands: RunGearItem | null;
+  legs: RunGearItem | null;
+  feet: RunGearItem | null;
+  finger1: RunGearItem | null;
+  finger2: RunGearItem | null;
+  trinket1: RunGearItem | null;
+  trinket2: RunGearItem | null;
+  mainhand: RunGearItem | null;
+  offhand: RunGearItem | null;
+}
+
+export interface EnrichedRunPlayer extends MythicPlusBestRunPlayer {
+  itemLevel: number | null;
+  ranks: { score: number; world: number; region: number; realm: number } | null;
+  talentLoadoutText: string | null;
+  gear: RunPlayerGear;
+}
+
 export interface MythicPlusBestRun {
   dungeon: string;
   short_name: string;
@@ -162,6 +213,8 @@ export interface MythicPlusBestRun {
   num_keystone_upgrades: number;
   score: number;
   url: string;
+  keystone_run_id?: number;
+  roster?: MythicPlusBestRunPlayer[];
 }
 
 export interface MythicPlusSeasonScore {
@@ -174,11 +227,49 @@ export interface CharacterGear {
   item_level_total: number;
 }
 
+export interface RankBreakdown {
+  world: number;
+  region: number;
+  realm: number;
+}
+
+export interface MythicPlusRanks {
+  overall: RankBreakdown;
+  specs: Record<string, RankBreakdown>;
+}
+
+export interface MythicPlusSpecScore {
+  spec: string;
+  score: number;
+  ranks: RankBreakdown;
+}
+
+export interface RaidBossKill {
+  slug: string;
+  name: string;
+  defeatedAt?: string;
+}
+
+export interface RaidProgressionDetail extends RaidProgressionSummary {
+  bosses?: {
+    normal?: RaidBossKill[];
+    heroic?: RaidBossKill[];
+    mythic?: RaidBossKill[];
+  };
+}
+
 export interface EnrichedCharacterProfile extends CharacterProfileResponse {
   gear?: CharacterGear;
-  raid_progression?: Record<string, RaidProgressionSummary>;
+  raid_progression?: Record<string, RaidProgressionSummary | RaidProgressionDetail>;
   mythic_plus_scores_by_season?: MythicPlusSeasonScore[];
   mythic_plus_best_runs?: MythicPlusBestRun[];
+  mythic_plus_ranks?: MythicPlusRanks;
+  mythic_plus_scores_by_season_specs?: MythicPlusSpecScore[];
+}
+
+export interface ScoreTier {
+  score: number;
+  rgbHex: string;
 }
 
 export interface GuildProfileParams {

@@ -5,6 +5,7 @@ import { WoWApiClient } from "@/lib/wow-api";
 import type { WoWRegion } from "@/lib/wow-api";
 import { getCharacterProfile } from "@/lib/raiderio/client";
 import type { EnrichedCharacterProfile } from "@/lib/raiderio/types";
+import { getScoreTiers, resolveScoreColor } from "@/lib/raiderio/score-colors";
 import { CharacterTheme } from "./character-theme";
 import { HeroSection } from "./hero-section";
 import { BentoGrid } from "./bento-grid";
@@ -144,7 +145,7 @@ export default async function CharacterDetailPage({ params }: Props) {
     region: region as WoWRegion,
   });
 
-  const [profileResult, mediaResult, rioResult] = await Promise.allSettled([
+  const [profileResult, mediaResult, rioResult, scoreTiersResult] = await Promise.allSettled([
     client.getCharacterProfile(realm, characterName),
     client.getCharacterMedia(realm, characterName),
     getCharacterProfile({
@@ -152,8 +153,9 @@ export default async function CharacterDetailPage({ params }: Props) {
       realm,
       name: characterName,
       fields:
-        "gear,raid_progression,mythic_plus_scores_by_season:current,mythic_plus_best_runs:all",
+        "gear,raid_progression,mythic_plus_ranks,mythic_plus_scores_by_season:current,mythic_plus_best_runs:all",
     }),
+    getScoreTiers(),
   ]);
 
   const profileData =
@@ -164,6 +166,8 @@ export default async function CharacterDetailPage({ params }: Props) {
     rioResult.status === "fulfilled"
       ? (rioResult.value as EnrichedCharacterProfile)
       : null;
+  const scoreTiers =
+    scoreTiersResult.status === "fulfilled" ? scoreTiersResult.value : [];
 
   if (!profileData?.ok) {
     if (!profileData || profileData.error.status === 404) notFound();
@@ -192,6 +196,9 @@ export default async function CharacterDetailPage({ params }: Props) {
   const classCssTheme = CLASS_THEMES[className] ?? "theme-midnight";
 
   const mplusScore = rio?.mythic_plus_scores_by_season?.[0]?.scores.all ?? 0;
+  const scoreColor = resolveScoreColor(mplusScore, scoreTiers);
+  const mplusRanks = rio?.mythic_plus_ranks;
+  const specScores = rio?.mythic_plus_scores_by_season_specs;
   const raidProg = rio?.raid_progression;
   const raidSummary = raidProg
     ? Object.values(raidProg)[0]?.summary
@@ -222,19 +229,29 @@ export default async function CharacterDetailPage({ params }: Props) {
 
       <BentoGrid
         raidSummary={raidSummary}
+        raidProgression={raidProg}
+        regionRank={undefined}
+        worldRank={undefined}
         mplusScore={mplusScore}
         highestRun={
           highestRun
             ? { dungeon: highestRun.dungeon, level: highestRun.mythic_level }
             : undefined
         }
+        scoreColor={scoreColor}
+        ranks={mplusRanks}
+        specScores={specScores}
+        scoreTiers={scoreTiers}
         hasTwitchIntegration={false}
+        characterName={characterName}
+        serverSlug={realm}
+        serverRegion={region}
       />
 
-      <div className="mx-auto mt-8 w-full max-w-4xl px-4 sm:px-6">
+      <div className="mx-auto mt-8 w-full max-w-[var(--max-viewport)] px-4 sm:px-6">
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           <RaidHistoryTable raidProgression={raidProg} />
-          <MPlusHistoryTable bestRuns={bestRuns} />
+          <MPlusHistoryTable bestRuns={bestRuns} scoreTiers={scoreTiers} />
           <UserInterfacePlaceholder />
         </div>
 

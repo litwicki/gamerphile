@@ -279,6 +279,18 @@ import { render, screen, fireEvent, cleanup, within } from "@testing-library/rea
 import { useSession } from "next-auth/react";
 import { AppBar } from "@/components/layout/app-bar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { UltrawideProvider } from "@/components/ultrawide-provider";
+import { RegionProvider } from "@/components/region-provider";
+
+function AllProviders({ children }: { children: React.ReactNode }) {
+  return (
+    <ThemeProvider>
+      <RegionProvider>
+        <UltrawideProvider>{children}</UltrawideProvider>
+      </RegionProvider>
+    </ThemeProvider>
+  );
+}
 
 // ── Arbitraries for Property 1 ──
 
@@ -347,29 +359,29 @@ describe("Property 1: Auth-state determines rendered UI", () => {
       fc.property(arbSessionState, (sessionState) => {
         vi.mocked(useSession).mockReturnValue(sessionState as any);
 
-        const { unmount, container } = render(<ThemeProvider><AppBar /></ThemeProvider>);
+        const { unmount, container } = render(<AllProviders><AppBar /></AllProviders>);
 
-        const signInLink = screen.queryByRole("link", { name: /sign in/i });
+        const signInLinks = screen.queryAllByRole("link", { name: /sign in/i });
         // Loading state renders a circular skeleton placeholder (div with animate-pulse)
         const skeletonIndicator = container.querySelector(".animate-pulse");
         // Authenticated state renders the AvatarMenu with aria-label="User menu"
-        const avatarMenuTrigger = screen.queryByLabelText("User menu");
+        const avatarMenuTriggers = screen.queryAllByLabelText("User menu");
 
         if (sessionState.status === "authenticated") {
           // Authenticated: should have avatar menu trigger, no sign-in or skeleton
-          expect(avatarMenuTrigger).not.toBeNull();
-          expect(signInLink).toBeNull();
+          expect(avatarMenuTriggers.length).toBeGreaterThan(0);
+          expect(signInLinks.length).toBe(0);
           expect(skeletonIndicator).toBeNull();
         } else if (sessionState.status === "unauthenticated") {
           // Unauthenticated: should have sign-in, no avatar menu or skeleton
-          expect(signInLink).not.toBeNull();
-          expect(avatarMenuTrigger).toBeNull();
+          expect(signInLinks.length).toBeGreaterThan(0);
+          expect(avatarMenuTriggers.length).toBe(0);
           expect(skeletonIndicator).toBeNull();
         } else if (sessionState.status === "loading") {
           // Loading: should have skeleton indicator, no sign-in or avatar menu
           expect(skeletonIndicator).not.toBeNull();
-          expect(signInLink).toBeNull();
-          expect(avatarMenuTrigger).toBeNull();
+          expect(signInLinks.length).toBe(0);
+          expect(avatarMenuTriggers.length).toBe(0);
         }
 
         unmount();
@@ -383,10 +395,10 @@ describe("Property 1: Auth-state determines rendered UI", () => {
       fc.property(arbAuthenticatedState, (sessionState) => {
         vi.mocked(useSession).mockReturnValue(sessionState as any);
 
-        const { unmount, container } = render(<ThemeProvider><AppBar /></ThemeProvider>);
+        const { unmount, container } = render(<AllProviders><AppBar /></AllProviders>);
 
-        expect(screen.queryByLabelText("User menu")).not.toBeNull();
-        expect(screen.queryByRole("link", { name: /sign in/i })).toBeNull();
+        expect(screen.queryAllByLabelText("User menu").length).toBeGreaterThan(0);
+        expect(screen.queryAllByRole("link", { name: /sign in/i }).length).toBe(0);
         expect(container.querySelector(".animate-pulse")).toBeNull();
 
         unmount();
@@ -400,10 +412,10 @@ describe("Property 1: Auth-state determines rendered UI", () => {
       fc.property(arbUnauthenticatedState, (sessionState) => {
         vi.mocked(useSession).mockReturnValue(sessionState as any);
 
-        const { unmount, container } = render(<ThemeProvider><AppBar /></ThemeProvider>);
+        const { unmount, container } = render(<AllProviders><AppBar /></AllProviders>);
 
-        expect(screen.queryByRole("link", { name: /sign in/i })).not.toBeNull();
-        expect(screen.queryByLabelText("User menu")).toBeNull();
+        expect(screen.queryAllByRole("link", { name: /sign in/i }).length).toBeGreaterThan(0);
+        expect(screen.queryAllByLabelText("User menu").length).toBe(0);
         expect(container.querySelector(".animate-pulse")).toBeNull();
 
         unmount();
@@ -417,7 +429,7 @@ describe("Property 1: Auth-state determines rendered UI", () => {
       fc.property(arbLoadingState, (sessionState) => {
         vi.mocked(useSession).mockReturnValue(sessionState as any);
 
-        const { unmount, container } = render(<ThemeProvider><AppBar /></ThemeProvider>);
+        const { unmount, container } = render(<AllProviders><AppBar /></AllProviders>);
 
         expect(container.querySelector(".animate-pulse")).not.toBeNull();
         expect(screen.queryByRole("link", { name: /sign in/i })).toBeNull();
@@ -501,7 +513,7 @@ describe("Property 2: Avatar image source matches session", () => {
           update: vi.fn(),
         });
 
-        const { unmount, container } = render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
+        const { unmount, container } = render(<AllProviders><AvatarMenu /></AllProviders>);
 
         // With the Image mock, Radix Avatar.Image renders the <img> element
         const imgElement = container.querySelector("img");
@@ -559,7 +571,7 @@ describe("Property 5: Menu item href correctness", () => {
           });
 
           // Render the AvatarMenu to verify it mounts with the authenticated session
-          const { unmount: unmountMenu, baseElement } = render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
+          const { unmount: unmountMenu, baseElement } = render(<AllProviders><AvatarMenu /></AllProviders>);
           expect(
             within(baseElement).getByLabelText("User menu")
           ).toBeDefined();
@@ -610,7 +622,7 @@ describe("Property 5: Menu item href correctness", () => {
         });
 
         // Verify AvatarMenu mounts correctly with the session
-        const { unmount: unmountMenu, baseElement } = render(<ThemeProvider><AvatarMenu /></ThemeProvider>);
+        const { unmount: unmountMenu, baseElement } = render(<AllProviders><AvatarMenu /></AllProviders>);
         expect(
           within(baseElement).getByLabelText("User menu")
         ).toBeDefined();
