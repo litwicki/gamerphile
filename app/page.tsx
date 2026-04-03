@@ -121,7 +121,7 @@ function MobileBento({ region }: { region: string }) {
 
       <Tabs.Content value="tracker" className="min-h-[400px] p-4">
         <div className="max-h-[500px] overflow-y-auto">
-          <RssFeed feedUrl="https://www.wowhead.com/blue-tracker?rss" maxItems={15} />
+          <RssFeed feedUrl="https://www.wowhead.com/blue-tracker?rss" maxItems={15} region={region} />
         </div>
       </Tabs.Content>
 
@@ -153,7 +153,7 @@ function DesktopBento({ region }: { region: string }) {
     <div className="grid auto-rows-[minmax(200px,auto)] grid-cols-3 gap-4 lg:grid-cols-4">
       <BentoCard title="Blue Tracker" className="row-span-2 col-span-1">
         <div className="h-full max-h-[600px] overflow-y-auto">
-          <RssFeed feedUrl="https://www.wowhead.com/blue-tracker?rss" maxItems={15} />
+          <RssFeed feedUrl="https://www.wowhead.com/blue-tracker?rss" maxItems={15} region={region} />
         </div>
       </BentoCard>
 

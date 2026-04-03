@@ -5,6 +5,8 @@ import { AuthSessionProvider } from "@/components/layout/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { RegionProvider } from "@/components/region-provider";
 import { UltrawideProvider } from "@/components/ultrawide-provider";
+import { CursorTrailProvider } from "@/components/cursor-trail-provider";
+import { CursorTrail } from "@/components/cursor-trail";
 import { AppBar } from "@/components/layout/app-bar";
 import { Footer } from "@/components/layout/footer";
 
@@ -35,11 +37,14 @@ export default function RootLayout({
           <ThemeProvider>
             <RegionProvider>
               <UltrawideProvider>
-                <div className="flex min-h-screen flex-col bg-background/90">
-                  <AppBar />
-                  <main className="flex-1">{children}</main>
-                  <Footer />
-                </div>
+                <CursorTrailProvider>
+                  <CursorTrail />
+                  <div className="flex min-h-screen flex-col bg-background/90">
+                    <AppBar />
+                    <main className="flex-1">{children}</main>
+                    <Footer />
+                  </div>
+                </CursorTrailProvider>
               </UltrawideProvider>
             </RegionProvider>
           </ThemeProvider>

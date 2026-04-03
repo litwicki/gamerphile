@@ -280,13 +280,16 @@ import { useSession } from "next-auth/react";
 import { AppBar } from "@/components/layout/app-bar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { UltrawideProvider } from "@/components/ultrawide-provider";
+import { CursorTrailProvider } from "@/components/cursor-trail-provider";
 import { RegionProvider } from "@/components/region-provider";
 
 function AllProviders({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <RegionProvider>
-        <UltrawideProvider>{children}</UltrawideProvider>
+        <UltrawideProvider>
+          <CursorTrailProvider>{children}</CursorTrailProvider>
+        </UltrawideProvider>
       </RegionProvider>
     </ThemeProvider>
   );

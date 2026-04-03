@@ -5,6 +5,7 @@ export interface RssItem {
   link: string;
   description: string;
   pubDate: string;
+  guid: string;
 }
 
 function extractTag(xml: string, tag: string): string {
@@ -23,6 +24,7 @@ function parseRss(xml: string): RssItem[] {
       link: extractTag(block, "link"),
       description: extractTag(block, "description").replace(/<[^>]*>/g, "").slice(0, 200),
       pubDate: extractTag(block, "pubDate"),
+      guid: extractTag(block, "guid"),
     });
   }
   return items;

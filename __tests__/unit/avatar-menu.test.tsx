@@ -21,13 +21,16 @@ import { useSession } from "next-auth/react";
 import { AvatarMenu, MENU_ITEMS } from "@/components/layout/avatar-menu";
 import { ThemeProvider } from "@/components/theme-provider";
 import { UltrawideProvider } from "@/components/ultrawide-provider";
+import { CursorTrailProvider } from "@/components/cursor-trail-provider";
 import { RegionProvider } from "@/components/region-provider";
 
 function AllProviders({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <RegionProvider>
-        <UltrawideProvider>{children}</UltrawideProvider>
+        <UltrawideProvider>
+          <CursorTrailProvider>{children}</CursorTrailProvider>
+        </UltrawideProvider>
       </RegionProvider>
     </ThemeProvider>
   );
@@ -101,15 +104,16 @@ describe("AvatarMenu", () => {
 
       await waitFor(() => {
         const items = screen.getAllByRole("menuitem");
-        // 3 nav items + Theme sub-trigger + Region sub-trigger + Ultrawide + Sign out = 7
-        expect(items).toHaveLength(7);
+        // 3 nav items + Theme sub-trigger + Region sub-trigger + Ultrawide + Cursor Trail + Sign out = 8
+        expect(items).toHaveLength(8);
         expect(items[0]).toHaveTextContent("Guilds");
         expect(items[1]).toHaveTextContent("Characters");
         expect(items[2]).toHaveTextContent("Interface");
         expect(items[3]).toHaveTextContent("Theme");
         expect(items[4]).toHaveTextContent("Region");
         expect(items[5]).toHaveTextContent("Ultrawide");
-        expect(items[6]).toHaveTextContent("Sign out");
+        expect(items[6]).toHaveTextContent("Cursor Trail");
+        expect(items[7]).toHaveTextContent("Sign out");
       });
     });
   });
@@ -125,7 +129,7 @@ describe("AvatarMenu", () => {
 
       // Menu should be open
       await waitFor(() => {
-        expect(screen.getAllByRole("menuitem")).toHaveLength(7);
+        expect(screen.getAllByRole("menuitem")).toHaveLength(8);
       });
 
       // Press Escape
@@ -171,7 +175,7 @@ describe("AvatarMenu", () => {
 
       await waitFor(() => {
         const items = screen.getAllByRole("menuitem");
-        expect(items).toHaveLength(MENU_ITEMS.length + 4); // +1 Theme sub-trigger, +1 Region sub-trigger, +1 Ultrawide, +1 Sign out
+        expect(items).toHaveLength(MENU_ITEMS.length + 5); // +1 Theme sub-trigger, +1 Region sub-trigger, +1 Ultrawide, +1 Cursor Trail, +1 Sign out
         for (const item of items) {
           expect(item).toHaveAttribute("role", "menuitem");
         }
