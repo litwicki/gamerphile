@@ -108,6 +108,14 @@ const authConfig: NextAuthConfig = {
     async jwt({ token, account, profile }: { token: JWT; account?: any; profile?: any }) {
       if (account) {
         // Initial sign-in: persist tokens and expiry from the account object
+        console.log("[auth] sign-in account fields:", {
+          hasAccessToken: !!account.access_token,
+          hasRefreshToken: !!account.refresh_token,
+          refreshToken: account.refresh_token,
+          expiresAt: account.expires_at,
+          expiresIn: account.expires_in,
+          tokenType: account.token_type,
+        });
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
         token.expiresAt = account.expires_at; // unix timestamp in seconds

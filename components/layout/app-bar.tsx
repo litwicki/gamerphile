@@ -8,11 +8,11 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AvatarMenu } from "@/components/layout/avatar-menu";
 import { RegionSelector } from "@/components/layout/region-selector";
+import { CharacterSearch } from "@/components/layout/character-search";
 
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/news", label: "News" },
-  { href: "/characters", label: "Characters" },
   { href: "/ui", label: "UI" },
 ];
 
@@ -45,6 +45,11 @@ export function AppBar() {
             </Link>
           ))}
         </nav>
+
+        {/* Character search — inline after nav */}
+        <div className="ml-3 hidden md:flex">
+          <CharacterSearch />
+        </div>
 
         <div className="flex-1" />
 
