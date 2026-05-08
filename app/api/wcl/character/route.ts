@@ -32,10 +32,11 @@ export async function GET(request: NextRequest) {
     const difficulty = searchParams.get("difficulty")
       ? Number(searchParams.get("difficulty"))
       : undefined;
+    const metric = searchParams.get("metric") || "dps";
 
     const [zoneRankings, encounterRankings] = await Promise.all([
-      client.getCharacterZoneRankings(name, serverSlug, serverRegion, undefined, difficulty),
-      client.getCharacterEncounterRankings(name, serverSlug, serverRegion, undefined, difficulty),
+      client.getCharacterZoneRankings(name, serverSlug, serverRegion, undefined, difficulty, metric),
+      client.getCharacterEncounterRankings(name, serverSlug, serverRegion, undefined, difficulty, metric),
     ]);
 
     return NextResponse.json({ zoneRankings, encounterRankings });

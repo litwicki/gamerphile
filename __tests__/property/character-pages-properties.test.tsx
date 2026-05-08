@@ -608,8 +608,8 @@ describe("Property 6: Raid history renders without crashing for any raid progres
           <RaidHistoryTable raidProgression={raidProgression} characterName="Test" serverSlug="test" serverRegion="us" />
         );
 
-        // Should render the "Raid Logs" heading
-        expect(container.textContent).toContain("Raid Logs");
+        // Should render the "Raids" tab button
+        expect(container.textContent).toContain("Raids");
 
         // Should render difficulty buttons
         const buttons = container.querySelectorAll("button");

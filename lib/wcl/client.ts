@@ -117,7 +117,8 @@ export class WCLClient {
     serverSlug: string,
     serverRegion: string,
     zoneID?: number,
-    difficulty?: number
+    difficulty?: number,
+    metric: string = "dps"
   ): Promise<WCLZoneRanking | null> {
     const zoneArg = zoneID != null ? `, zoneID: ${zoneID}` : "";
     const diffArg = difficulty != null ? `, difficulty: ${difficulty}` : "";
@@ -126,7 +127,7 @@ export class WCLClient {
       query {
         characterData {
           character(name: "${name}", serverSlug: "${serverSlug}", serverRegion: "${serverRegion}") {
-            zoneRankings(metric: dps${zoneArg}${diffArg})
+            zoneRankings(metric: ${metric}${zoneArg}${diffArg})
           }
         }
       }
@@ -160,7 +161,8 @@ export class WCLClient {
     serverSlug: string,
     serverRegion: string,
     zoneID?: number,
-    difficulty?: number
+    difficulty?: number,
+    metric: string = "dps"
   ): Promise<WCLEncounterRanking[] | null> {
     const zoneArg = zoneID != null ? `, zoneID: ${zoneID}` : "";
     const diffArg = difficulty != null ? `, difficulty: ${difficulty}` : "";
@@ -169,7 +171,7 @@ export class WCLClient {
       query {
         characterData {
           character(name: "${name}", serverSlug: "${serverSlug}", serverRegion: "${serverRegion}") {
-            zoneRankings(metric: dps${zoneArg}${diffArg})
+            zoneRankings(metric: ${metric}${zoneArg}${diffArg})
           }
         }
       }
