@@ -24,7 +24,7 @@ interface MplusEntry {
     dungeon: { name: string; short_name: string };
     mythic_level: number;
     clear_time_ms: number;
-    num_chests: number;
+    num_keystone_upgrades: number;
   };
 }
 
@@ -91,9 +91,13 @@ function MythicPlusRuns({ region }: { region: string }) {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/raiderio/mythic-plus-runs?season=${WOW_SEASON}&region=${apiRegion}`)
+    fetch(`/api/raiderio/mythic-plus-runs?season=${WOW_SEASON}&region=${apiRegion}&page=0`)
       .then((r) => r.json())
-      .then((data) => setEntries((data.rankings ?? []).slice(0, 10)))
+      .then((data) => {
+        const runs: MplusEntry[] = data.rankings ?? [];
+        runs.sort((a, b) => b.run.mythic_level - a.run.mythic_level || b.score - a.score);
+        setEntries(runs.slice(0, 10));
+      })
       .catch(() => setEntries([]))
       .finally(() => setLoading(false));
   }, [apiRegion]);
@@ -104,10 +108,10 @@ function MythicPlusRuns({ region }: { region: string }) {
     <div className="space-y-1 overflow-y-auto">
       {entries.map((e, i) => (
         <div key={i} className="flex items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/30">
-          <span className="w-6 text-right font-mono font-bold text-primary">+{e.run.mythic_level}</span>
-          <span className="flex-1 truncate font-medium text-muted-foreground">{e.run.dungeon.short_name}</span>
-          <span className="text-muted-foreground">{formatTime(e.run.clear_time_ms)}</span>
-          <span className="w-10 text-right font-mono text-foreground">{e.score.toFixed(1)}</span>
+          <span className="w-8 shrink-0 text-right font-mono font-bold text-primary">+{e.run.mythic_level}</span>
+          <span className="flex-1 truncate font-medium text-card-foreground">{e.run.dungeon.short_name}</span>
+          <span className="shrink-0 text-muted-foreground">{formatTime(e.run.clear_time_ms)}</span>
+          <span className="w-12 shrink-0 text-right font-mono text-foreground">{e.score.toFixed(1)}</span>
         </div>
       ))}
       {entries.length === 0 && <p className="text-xs text-muted-foreground">No data available</p>}

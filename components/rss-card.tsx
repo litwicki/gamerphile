@@ -16,6 +16,39 @@ interface RssCardProps {
   region?: string;
 }
 
+const MONTH_NAMES =
+  "january|february|march|april|may|june|july|august|september|october|november|december|" +
+  "jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec";
+
+/**
+ * Normalize a title for deduplication:
+ * - Strips trailing " (EU)" / " (US)" region labels
+ * - Canonicalizes trailing date suffixes to "Month D" format so that
+ *   "- 7 April" and "- April 7" (and "(EU)"/"(US)" variants) all map
+ *   to the same key.
+ */
+function normalizeTitle(title: string): string {
+  let t = title.replace(/\s*\((eu|us)\)\s*$/i, "").trim();
+
+  // "- D Month[,] [Year]" → "- Month D"  (EU style)
+  t = t.replace(
+    new RegExp(`\\s*-\\s*(\\d{1,2})\\s+(${MONTH_NAMES})(?:\\s+\\d{4})?\\s*$`, "i"),
+    (_, day, month) => ` - ${capitalize(month)} ${parseInt(day, 10)}`
+  );
+
+  // "- Month D[,] [Year]" → "- Month D"  (US style, normalise spacing/year)
+  t = t.replace(
+    new RegExp(`\\s*-\\s*(${MONTH_NAMES})\\s+(\\d{1,2})(?:[,\\s]+\\d{4})?\\s*$`, "i"),
+    (_, month, day) => ` - ${capitalize(month)} ${parseInt(day, 10)}`
+  );
+
+  return t.trim();
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
 /**
  * Extract the region slug ("us" or "eu") from a wowhead blue-tracker URL.
  * Returns null for non-blue-tracker links.
@@ -26,38 +59,30 @@ function extractLinkRegion(url: string): string | null {
 }
 
 /**
- * Deduplicate blue-tracker items that share the same title,
- * keeping only the variant matching the preferred region.
- * Non-blue-tracker items pass through unchanged.
+ * Filter and deduplicate RSS items:
+ * - Blue-tracker posts with a region in their URL are kept only if
+ *   that region matches the user's preferred region.
+ * - Titles are normalized before dedup so date-format differences
+ *   between EU ("7 April") and US ("April 7") are treated as the
+ *   same story.
+ * - Non-blue-tracker items always pass through, deduped by guid/link.
  */
-function deduplicateByRegion(items: RssItem[], preferredRegion: string): RssItem[] {
+function filterAndDedup(items: RssItem[], preferredRegion: string): RssItem[] {
   const seen = new Map<string, RssItem>();
 
   for (const item of items) {
     const linkRegion = extractLinkRegion(item.link);
 
-    // Not a regionalized blue-tracker link — always keep
-    if (!linkRegion) {
-      seen.set(item.guid || item.link, item);
+    // Regional blue-tracker post: drop if it doesn't match preferred region
+    if (linkRegion && linkRegion !== preferredRegion) {
       continue;
     }
 
-    // Use title as the dedup key (same post across regions shares the same title)
-    const key = item.title;
-    const existing = seen.get(key);
-
-    if (!existing) {
-      seen.set(key, item);
-      continue;
-    }
-
-    const existingRegion = extractLinkRegion(existing.link);
-
-    // Prefer the item matching the user's region
-    if (linkRegion === preferredRegion && existingRegion !== preferredRegion) {
+    // Dedup key: normalized title for regional posts, guid/link otherwise
+    const key = linkRegion ? normalizeTitle(item.title) : (item.guid || item.link);
+    if (!seen.has(key)) {
       seen.set(key, item);
     }
-    // Otherwise keep the existing one
   }
 
   return Array.from(seen.values());
@@ -76,7 +101,7 @@ export function RssFeed({ feedUrl, maxItems = 10, region }: RssCardProps) {
         const data = await res.json();
         const raw: RssItem[] = data.items ?? [];
         const preferred = region === "eu" ? "eu" : "us";
-        const deduped = deduplicateByRegion(raw, preferred);
+        const deduped = filterAndDedup(raw, preferred);
         setItems(deduped.slice(0, maxItems));
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to load feed");

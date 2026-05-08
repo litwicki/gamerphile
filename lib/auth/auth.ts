@@ -6,13 +6,17 @@ import BattleNetProvider from "./battlenet-provider";
 // Extended JWT type with Battle.net fields
 export interface ExtendedJWT extends JWT {
   accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: number; // unix timestamp in seconds
   battletag?: string;
   picture?: string | null;
+  error?: "RefreshTokenError";
 }
 
 // Extended session type with Battle.net fields
 export interface GamerphileSession extends Session {
   accessToken?: string;
+  error?: "RefreshTokenError";
   user: {
     id: string;
     name?: string;
@@ -62,6 +66,36 @@ export async function fetchWoWAvatarUrl(accessToken: string, region: string = "u
   }
 }
 
+async function refreshBattleNetToken(token: ExtendedJWT): Promise<ExtendedJWT> {
+  const credentials = Buffer.from(
+    `${process.env.BATTLENET_CLIENT_ID}:${process.env.BATTLENET_CLIENT_SECRET}`
+  ).toString("base64");
+
+  const response = await fetch("https://oauth.battle.net/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${credentials}`,
+    },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: token.refreshToken!,
+    }),
+  });
+
+  const refreshed = await response.json();
+  if (!response.ok) throw refreshed;
+
+  return {
+    ...token,
+    accessToken: refreshed.access_token,
+    expiresAt: Math.floor(Date.now() / 1000) + refreshed.expires_in,
+    // Some providers only issue a refresh token once; preserve the old one if not returned
+    refreshToken: refreshed.refresh_token ?? token.refreshToken,
+    error: undefined,
+  };
+}
+
 const authConfig: NextAuthConfig = {
   debug: true,
   providers: [
@@ -73,21 +107,53 @@ const authConfig: NextAuthConfig = {
   callbacks: {
     async jwt({ token, account, profile }: { token: JWT; account?: any; profile?: any }) {
       if (account) {
+        // Initial sign-in: persist tokens and expiry from the account object
+        console.log("[auth] sign-in account fields:", {
+          hasAccessToken: !!account.access_token,
+          hasRefreshToken: !!account.refresh_token,
+          refreshToken: account.refresh_token,
+          expiresAt: account.expires_at,
+          expiresIn: account.expires_in,
+          tokenType: account.token_type,
+        });
         token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
+        token.expiresAt = account.expires_at; // unix timestamp in seconds
         // Fetch WoW avatar on initial sign-in
         token.picture = await fetchWoWAvatarUrl(account.access_token);
       }
       if (profile?.battle_tag) {
         token.battletag = profile.battle_tag;
       }
-      return token;
+
+      const ext = token as ExtendedJWT;
+
+      // Token still valid — return as-is
+      if (ext.expiresAt && Date.now() < ext.expiresAt * 1000) {
+        return token;
+      }
+
+      // Token expired — attempt refresh
+      if (!ext.refreshToken) {
+        ext.error = "RefreshTokenError";
+        return ext;
+      }
+
+      try {
+        return await refreshBattleNetToken(ext);
+      } catch {
+        ext.error = "RefreshTokenError";
+        return ext;
+      }
     },
     session({ session, token }: { session: any; token: JWT }) {
       const gamerphileSession = session as GamerphileSession;
-      gamerphileSession.accessToken = token.accessToken as string | undefined;
+      const ext = token as ExtendedJWT;
+      gamerphileSession.accessToken = ext.accessToken;
+      gamerphileSession.error = ext.error;
       if (gamerphileSession.user) {
-        gamerphileSession.user.battletag = token.battletag as string | undefined;
-        gamerphileSession.user.image = (token.picture as string | undefined) ?? undefined;
+        gamerphileSession.user.battletag = ext.battletag as string | undefined;
+        gamerphileSession.user.image = (ext.picture as string | undefined) ?? undefined;
       }
       return gamerphileSession;
     },
