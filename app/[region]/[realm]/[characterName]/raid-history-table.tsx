@@ -84,9 +84,8 @@ export function RaidHistoryTable({
           params.set("difficulty", String(DIFF_NUM[activeDiff]));
           params.set("metric", "dps");
         } else {
-          // M+ uses playerscore metric, difficulty 10 (M+ zone type)
+          // M+ uses playerscore metric with no difficulty filter
           params.set("metric", "playerscore");
-          params.set("difficulty", "10");
         }
 
         const res = await fetch(`/api/wcl/character?${params}`);
